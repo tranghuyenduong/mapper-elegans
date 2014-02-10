@@ -23,7 +23,6 @@ class BowtieConfig():
     coding_transcripts_ref = "/home/sba/noelle/refs/bt/coding_transcripts"
     transcript_bed = "/home/sba/noelle/refs/primary_transcripts.bed"
     transcript_parents = "/home/sba/noelle/refs/transcript_parents"
-    public_names = "/home/sba/noelle/refs/public_names"
     exon_coords = "/home/sba/noelle/refs/exon_coords"
 
 

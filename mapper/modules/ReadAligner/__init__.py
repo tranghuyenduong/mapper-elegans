@@ -13,7 +13,7 @@ class AlignmentRecord():
         self.read_count = int(re.search("(?<=-)[\d]+", self.read).group(0))
         self.strand = _record[1]
         self.ref = _record[2]
-        self.ref_public_name = None
+        self.parent = None
         self.chromosome = None
         self.start_coord = int(_record[3])
         self.seq = _record[4]
@@ -24,7 +24,7 @@ class AlignmentRecord():
             self.chromosome,
             self.start_coord,
             self.end_coord,
-            self.ref_public_name,
+            self.parent,
             self.read_count,
             self.seq
         )
@@ -32,15 +32,12 @@ class AlignmentRecord():
 
 class RecordFormatter():
 
-    def __init__(self, transcript_bed, transcript_parents, public_names, exon_coords):
+    def __init__(self, transcript_bed, transcript_parents, exon_coords):
         self.transcript_bed = defaultdict(tuple)
         self._parse_transcript_bed(transcript_bed)
 
         self.transcript_parents = defaultdict(str)
         self._parse_transcript_parents(transcript_parents)
-
-        self.public_names = defaultdict(str)
-        self._parse_public_names(public_names)
 
         self.exon_coords = defaultdict(list)
         self._parse_exon_coords(exon_coords)
@@ -61,12 +58,6 @@ class RecordFormatter():
             self.transcript_parents[transcript_id] = gene_id
             self.transcript_parents[name] = gene_id
 
-    def _parse_public_names(self, public_names):
-        for line in open(public_names, "rU").xreadlines():
-            gene_id, public_name = line.strip().split(",")
-
-            self.public_names[gene_id] = public_name
-
     def _parse_exon_coords(self, exon_coords):
         for line in open(exon_coords, "rU").xreadlines():
             transcript_id, coords = line.strip().split("\t")
@@ -81,8 +72,7 @@ class RecordFormatter():
             .ref][alignment_record.end_coord]
 
         alignment_record.chromosome = self.transcript_bed[alignment_record.ref][0]
-        alignment_record.ref_public_name = self.public_names[self
-        .transcript_parents[alignment_record.ref]]
+        alignment_record.parent = self.transcript_parents[alignment_record.ref]
         alignment_record.start_coord = self.transcript_bed[alignment_record.ref][1] + alignment_record.start_coord*self.transcript_bed[alignment_record.ref][2]
         alignment_record.end_coord = self.transcript_bed[alignment_record.ref][1] + alignment_record.end_coord*self.transcript_bed[alignment_record.ref][2]
 
@@ -96,7 +86,6 @@ class ReadAligner():
         self.formatter = RecordFormatter(
             self.config.transcript_bed,
             self.config.transcript_parents,
-            self.config.public_names,
             self.config.exon_coords
         )
 
