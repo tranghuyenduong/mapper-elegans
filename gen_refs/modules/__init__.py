@@ -72,6 +72,28 @@ def transcript_parents(gff3, output):
                 geneid
             ))
 
+def gene_boundaries(transcript_parents, gff2, output):
+    genes = set()
+
+    for transcript_parent in open(transcript_parents, "rU").xreadlines():
+        genes.add(transcript_parent.strip().split(",")[-1])
+
+    with open(output, "w") as output_handle:
+        for gff2_record in GFF2.parse(open(gff2, "rU")):
+            if gff2_record.source != "gene" or gff2_record.type != "gene":
+                continue
+
+            geneid = re.search('((?<=Gene ")(.*?)(?=" ;))', gff2_record.attr).group(1)
+
+            if geneid not in genes:
+                continue
+
+            output_handle.write("%s,%i,%i\n" % (
+                geneid,
+                gff2_record.start-1,
+                gff2_record.end
+            ))
+
 def public_names(wormbase_records, output):
     with open(output, "w") as output_handle:
         for wormbase_record in Wormbase.parse(open(wormbase_records, "rU")):

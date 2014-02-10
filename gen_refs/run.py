@@ -32,6 +32,11 @@ def wrapper():
 
     modules.transcript_parents(settings.GFF3_RECORDS, settings.REF + "/transcript_parents")
 
+    # Extract gene boundaries
+    print "\nExtracting gene boundaries..."
+
+    modules.gene_boundaries(settings.REF + "/transcript_parents", settings.GFF2_RECORDS, settings.REF + "/gene_boundaries")
+
     # Extract public names for transcripts
     print "\nExtracting gene public names..."
 
