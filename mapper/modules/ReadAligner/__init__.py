@@ -26,7 +26,7 @@ class AlignmentRecord():
             self.end_coord,
             self.parent,
             self.read_count,
-            self.seq
+            self.read
         )
 
 
