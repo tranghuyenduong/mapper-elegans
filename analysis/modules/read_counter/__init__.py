@@ -1,4 +1,4 @@
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from math import ceil
 
 
@@ -28,7 +28,7 @@ class ReadCounter():
             end = int(_record[2])
 
             for bin in self._get_bins(start, end):
-                self.counter[geneid, bin] = OrderedDict()
+                self.counter[geneid, bin] = defaultdict(int)
                 self.bins[geneid].append(bin)
 
     def _find_bin(self, geneid, coord):
@@ -41,14 +41,13 @@ class ReadCounter():
     def init_sample(self, sampleid):
         self.samples.append(sampleid)
 
-        for gene_bin in self.counter.keys():
-            self.counter[gene_bin][sampleid] = 0
-
     def log_alignment(self, sampleid, alignment):
         self.counter[self._find_bin(alignment.geneid, alignment.start)][sampleid] += alignment.read_count
 
     def write_counter(self, output):
         counter = sorted(self.counter.iteritems(), key=lambda s: (s[0][0], s[0][1]))
+
+        self.samples.sort()
 
         with open(output, "w") as output_handle:
             output_handle.write("Gene:Bin,%s\n" % ",".join(self.samples))
@@ -57,5 +56,5 @@ class ReadCounter():
                 output_handle.write("%s:%i,%s\n" % (
                     geneid,
                     bin,
-                    ",".join(map(str, count_dict.values()))
+                    ",".join(str(count_dict[sample]) for sample in self.samples)
                 ))
