@@ -31,6 +31,8 @@ class AlignmentRecord():
 class RecordFormatter():
 
     def __init__(self, transcript_bed, transcript_parents, exon_coords):
+        self.complement = {"A": "T", "T": "A", "G": "C", "C": "G"}
+
         self.transcript_bed = defaultdict(tuple)
         self._parse_transcript_bed(transcript_bed)
 
@@ -77,6 +79,10 @@ class RecordFormatter():
 
         if strand == -1:
             alignment_record.strand = "+"
+            alignment_record.start_coord, alignment_record.end_coord = \
+                alignment_record.end_coord, alignment_record.start_coord
+            alignment_record.seq = "".join(self.complement[base] for base in\
+                    reversed(alignment_record.seq))
 
 
 class ReadAligner():
