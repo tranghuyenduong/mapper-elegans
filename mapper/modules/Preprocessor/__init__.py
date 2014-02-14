@@ -68,86 +68,27 @@ class Preprocessor():
 
                 reads[str(read.seq)] += 1
 
-            min_expr_cutoff = expr_cutoff(total_reads, self.config.min_expr)
-
             with open(output, "w") as output_handle:
                 for idx, (read, read_count) in enumerate(reads.iteritems()):
-                    if read_count >= min_expr_cutoff:
-                        output_handle.write(">%i-%i\n%s\n" % (
-                            idx,
-                            read_count,
-                            read
-                        ))
+                    output_handle.write(">%i-%i\n%s\n" % (
+                        idx,
+                        read_count,
+                        read
+                    ))
 
-                        copied_reads += read_count
-                        unique_reads += 1
+                    copied_reads += read_count
+                    unique_reads += 1
 
-            print "Total Reads: %i\nDiscarded %i too long reads.\nCopied " \
-                  "Reads: %i (Unique: %i)\nWritten to: %s." % (
+            print "Max. Length: %i\nInput: %i reads.\nOutput: %i reads (%i " \
+                  "unique).\ndiscarded %i too-long reads." % (
+                self.config.max_seq_len,
                 total_reads,
-                too_long_reads,
                 copied_reads,
                 unique_reads,
-                output
+                too_long_reads
             )
 
         print "Reads collapsed!\n"
-        return output
-
-    def _filter_multi_mapped(self, input):
-        print "Filtering out multi-mapped reads..."
-
-        input_prefix = os.path.splitext(input)[0]
-
-        output = "%s_nomultreads.fa" % input_prefix
-
-        if self.config.force_preprocess or not is_existing_file(output):
-            temp = "%s_multmapreads.fa" % input_prefix
-
-            align = subprocess.Popen(
-                [
-                    "bowtie",
-                    "-f",
-                    "-v 0",
-                    "--all",
-                    "--best",
-                    "--strata",
-                    "-m",
-                    str(self.config.multi_map_limit),
-                    "--max",
-                    temp,
-                    self.config.genome_ref,
-                    input
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-            print align.communicate()[1]
-
-            multi_mapped_reads = defaultdict(bool)
-
-            for read in SeqIO.parse(open(temp, "rU"), "fasta"):
-                multi_mapped_reads[read.name] = True
-
-            total_reads = 0
-            copied_reads = 0
-
-            with open(output, "w") as output_handle:
-                for record in SeqIO.parse(open(input, "rU"), "fasta"):
-                    total_reads += 1
-
-                    if not multi_mapped_reads[record.name]:
-                        SeqIO.write(record, output_handle, "fasta")
-
-                        copied_reads += 1
-
-            print "%i of %i total reads have been written to %s." % (
-                copied_reads,
-                total_reads,
-                output
-            )
-
-        print "Multi-mapped reads filtered!\n"
         return output
 
     @staticmethod

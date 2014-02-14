@@ -26,8 +26,8 @@ def wrapper():
         processed_reads
     )
 
-    print "Aligning to primary transcripts...\n"
-    for alignment in read_aligner.align_to(bt_config.primary_transcripts_ref):
+    print "Aligning to genome...\n"
+    for alignment in read_aligner.align_to(bt_config.genome_ref):
         alignments.add(alignment)
 
     print "Aligning to coding transcripts...\n"

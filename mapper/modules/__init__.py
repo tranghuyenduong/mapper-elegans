@@ -6,7 +6,7 @@ def write_alignments(records, output):
 
     total_records = sorted(
         [x.strip().split("\t") for x in records],
-        key=lambda s: (s[0], s[3], int(s[1]))
+        key=lambda s: (s[0], int(s[1]))
     )
 
     write_count = 0

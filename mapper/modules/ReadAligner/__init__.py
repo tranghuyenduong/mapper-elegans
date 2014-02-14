@@ -13,20 +13,18 @@ class AlignmentRecord():
         self.read_count = int(re.search("(?<=-)[\d]+", self.read).group(0))
         self.strand = _record[1]
         self.ref = _record[2]
-        self.parent = None
-        self.chromosome = None
         self.start_coord = int(_record[3])
         self.seq = _record[4]
         self.end_coord = self.start_coord + len(self.seq)
 
     def __str__(self):
         return "%s\t%i\t%i\t%s\t%i\t%s" % (
-            self.chromosome,
+            self.ref,
             self.start_coord,
             self.end_coord,
-            self.parent,
+            self.read,
             self.read_count,
-            self.read
+            self.strand
         )
 
 
@@ -64,17 +62,21 @@ class RecordFormatter():
 
             self.exon_coords[transcript_id] = map(int, coords.split())
 
-    def format_record(self, alignment_record, sync_coords):
-        if sync_coords:
-            alignment_record.start_coord = self.exon_coords[alignment_record
-            .ref][alignment_record.start_coord]
-            alignment_record.end_coord = self.exon_coords[alignment_record
-            .ref][alignment_record.end_coord]
+    def format_record(self, alignment_record, coding_transcript):
+        if not coding_transcript:
+            return
 
-        alignment_record.chromosome = self.transcript_bed[alignment_record.ref][0]
-        alignment_record.parent = self.transcript_parents[alignment_record.ref]
-        alignment_record.start_coord = self.transcript_bed[alignment_record.ref][1] + alignment_record.start_coord*self.transcript_bed[alignment_record.ref][2]
-        alignment_record.end_coord = self.transcript_bed[alignment_record.ref][1] + alignment_record.end_coord*self.transcript_bed[alignment_record.ref][2]
+        chromosome, start, strand = self.transcript_bed[alignment_record.ref]
+
+        alignment_record.start_coord = \
+            start + self.exon_coords[alignment_record.ref][alignment_record.start_coord]*strand
+        alignment_record.end_coord = \
+            start + self.exon_coords[alignment_record.ref][alignment_record.end_coord]*strand
+
+        alignment_record.ref = chromosome
+
+        if strand == -1:
+            alignment_record.strand = "+"
 
 
 class ReadAligner():
@@ -89,19 +91,22 @@ class ReadAligner():
             self.config.exon_coords
         )
 
-    def align_to(self, ref, sync_coords=False):
+    def align_to(self, ref, coding_transcript=False):
+        bt_params = [
+            "bowtie",
+            "-f",
+            "-v 0",
+            "--all",
+            "--best",
+            "--strata",
+            ref,
+            self.reads
+        ]
+        if coding_transcript:
+            bt_params.insert(6, "--nofw")
+
         align = subprocess.Popen(
-            [
-                "bowtie",
-                "-f",
-                "-v 0",
-                "--all",
-                "--best",
-                "--strata",
-                "--nofw",
-                ref,
-                self.reads
-            ],
+            bt_params,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
@@ -111,7 +116,7 @@ class ReadAligner():
 
             if line:
                 alignment_record = AlignmentRecord(line)
-                self.formatter.format_record(alignment_record, sync_coords)
+                self.formatter.format_record(alignment_record, coding_transcript)
 
                 yield str(alignment_record)
             else:
