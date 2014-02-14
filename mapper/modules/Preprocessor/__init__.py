@@ -14,10 +14,9 @@ class Preprocessor():
     def processed_reads(self):
         clipped = self._clip_adapter(self.config.raw_input)
         collapsed = self._collapse_reads(clipped)
-        no_mult_mapped_reads = self._filter_multi_mapped(collapsed)
 
-        print self._read_size_dist(no_mult_mapped_reads)
-        return no_mult_mapped_reads
+        print self._read_size_dist(collapsed)
+        return collapsed
 
     def _clip_adapter(self, input):
         print "Clipping adapter sequences..."
@@ -54,6 +53,7 @@ class Preprocessor():
 
         if self.config.force_preprocess or not is_existing_file(output):
             total_reads = 0
+            too_long_reads = 0
             copied_reads = 0
             unique_reads = 0
 
@@ -61,6 +61,10 @@ class Preprocessor():
 
             for read in SeqIO.parse(open(input, "rU"), "fastq"):
                 total_reads += 1
+
+                if len(read) > self.config.max_seq_len:
+                    too_long_reads += 1
+                    continue
 
                 reads[str(read.seq)] += 1
 
@@ -78,12 +82,12 @@ class Preprocessor():
                         copied_reads += read_count
                         unique_reads += 1
 
-            print "%i unique reads representing a total read count of %i (" \
-                  "from an initial read count of %i) have been written to %s" \
-                  "." % (
-                unique_reads,
-                copied_reads,
+            print "Total Reads: %i\nDiscarded %i too long reads.\nCopied " \
+                  "Reads: %i (Unique: %i)\nWritten to: %s." % (
                 total_reads,
+                too_long_reads,
+                copied_reads,
+                unique_reads,
                 output
             )
 

@@ -6,19 +6,14 @@ class PreprocessConfig():
     # Clip 3' adapter
     barcode_seq = "ACTTGA"
     adapter_seq = "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC%sATCTCGTATGCCGTCTTCTGCTTG" % barcode_seq
-    min_overlap = 10
-    min_seq_len = 15
-
-    # Filter out low-count reads
-    min_expr = 0 # Count per 1 million filtered reads
-
-    # Filter out multi-mapped reads
-    multi_map_limit = 10
-    genome_ref = "/home/sba/noelle/refs/bt/genome"
+    min_overlap = 15
+    min_seq_len = 17
+    max_seq_len = 27
 
 
 class BowtieConfig():
 
+    genome_ref = "/home/sba/noelle/refs/bt/genome"
     primary_transcripts_ref = "/home/sba/noelle/refs/bt/primary_transcripts"
     coding_transcripts_ref = "/home/sba/noelle/refs/bt/coding_transcripts"
     transcript_bed = "/home/sba/noelle/refs/primary_transcripts.bed"
