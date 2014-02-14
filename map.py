@@ -4,6 +4,7 @@ import time
 from modules import write_alignments
 from modules.Preprocessor import Preprocessor
 from modules.ReadAligner import ReadAligner
+from modules.Postprocessor import Postprocessor
 
 
 def wrapper():
@@ -37,7 +38,16 @@ def wrapper():
 
     print "Bowtie alignment records generated and formatted!\n"
 
-    print "STEP 3: Writing alignments to file...\n"
+    print "STEP 3: Post-processing alignments...\n"
+
+    print "Initializing Post-processor...\n"
+    post_processor = Postprocessor(settings.PostprocessConfig)
+
+    alignments = post_processor.process_alignments(alignments)
+
+    print "Post-processing complete!\n"
+
+    print "STEP 4: Writing alignments to file...\n"
     output_config = settings.Output
 
     alignment_count = write_alignments(alignments, output_config.alignments)

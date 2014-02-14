@@ -1,13 +1,12 @@
 import settings
 import time
 
-from modules.multimap_filter import MultimapFilter
-from modules.read_counter import ReadCounter
+from modules.ReadCounter import ReadCounter
 from os import listdir, path
 
 
 def main():
-    config = settings.Settings
+    config = settings.AnalysisSettings
 
     print "\nInitializing read counter..."
 
@@ -21,7 +20,7 @@ def main():
         rc.init_sample(sampleid)
 
         count = 0
-        for alignment in MultimapFilter(path.join(config.alignments_dir, f)).get_unique_mapped():
+        for alignment in open(path.join(config.alignments_dir, f), "rU").xreadlines():
             rc.log_alignment(sampleid, alignment)
 
             count += 1

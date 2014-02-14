@@ -94,6 +94,33 @@ def gene_boundaries(transcript_parents, gff2, output):
                 gff2_record.end
             ))
 
+def pirna_records(gff3, output):
+    with open(output, "w") as output_handle:
+        for gff3_record in GFF3.parse(open(gff3, "rU")):
+            if gff3_record.source != "WormBase" or gff3_record.type != \
+                    "gene" or gff3_record.attr["biotype"].pop() != "piRNA":
+                continue
+
+            output_handle.write("%s,%i,%i,%s\n" % (
+                gff3_record.seqid,
+                gff3_record.start-1,
+                gff3_record.end,
+                gff3_record.strand
+            ))
+
+def mirna_records(gff3, output):
+    with open(output, "w") as output_handle:
+        for gff3_record in GFF3.parse(open(gff3, "rU")):
+            if gff3_record.source != "WormBase" or gff3_record.type != "miRNA":
+                continue
+
+            output_handle.write("%s,%i,%i,%s\n" % (
+                gff3_record.seqid,
+                gff3_record.start-1,
+                gff3_record.end,
+                gff3_record.strand
+            ))
+
 def public_names(wormbase_records, output):
     with open(output, "w") as output_handle:
         for wormbase_record in Wormbase.parse(open(wormbase_records, "rU")):
@@ -192,3 +219,34 @@ def build_bowtie_index(fasta, bt_index):
     )
 
     build.communicate()
+
+def write_alignments(records, output):
+    if not output:
+        return
+
+    print "Generating a sorted list of alignments for reference...\n"
+
+    total_records = sorted(
+        [x.strip().split("\t") for x in records],
+        key=lambda s: (s[0], int(s[1]))
+    )
+
+    write_count = 0
+
+    with open(output, "w") as output_handle:
+        for record in total_records:
+            output_handle.write("%s\n" % "\t".join(record))
+
+            write_count += 1
+
+    return write_count
+
+def is_existing_file(fileName):
+    try:
+        with open(fileName):
+            return True
+    except IOError:
+        return False
+
+def expr_cutoff(reads_count, min_expr):
+    return float(min_expr) * (float(reads_count) / float(1000000))
