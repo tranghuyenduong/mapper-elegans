@@ -13,6 +13,11 @@ def wrapper():
     if not os.path.exists(config.ref):
         os.makedirs(config.ref)
 
+    # Extract protein coding genes
+    print "\nExtracting protein coding genes..."
+
+    modules.protein_coding_genes(config.gff3_records, config.ref + "/genes")
+
     # Extract primary transcripts
     print "\nExtracting primary transcripts..."
 
@@ -33,11 +38,6 @@ def wrapper():
     print "\nExtracting transcript parents..."
 
     modules.transcript_parents(config.gff3_records, config.ref + "/transcript_parents")
-
-    # Extract gene boundaries
-    print "\nExtracting gene boundaries..."
-
-    modules.gene_boundaries(config.ref + "/transcript_parents", config.gff2_records, config.ref + "/gene_boundaries")
 
     # Extract piRNA records
     print "\nExtracting piRNA records..."

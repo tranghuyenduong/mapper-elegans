@@ -3,7 +3,7 @@ import subprocess
 
 from Bio import SeqIO
 from collections import defaultdict
-from modules import is_existing_file, expr_cutoff
+from modules import is_existing_file
 
 
 class Preprocessor():

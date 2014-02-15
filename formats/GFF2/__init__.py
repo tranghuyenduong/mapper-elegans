@@ -1,6 +1,3 @@
-from collections import defaultdict
-
-
 class GFF2Record():
 
     def __init__(self, record):

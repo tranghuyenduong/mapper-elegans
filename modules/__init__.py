@@ -1,12 +1,28 @@
-import os
 import re
 import subprocess
-import sys
 
 from Bio import SeqIO
 from collections import defaultdict
 from formats import Bed, GFF2, GFF3, Wormbase
 
+
+def protein_coding_genes(gff3, output):
+    with open(output, "w") as output_handle:
+        for gff3_record in GFF3.parse(open(gff3, "rU")):
+            if gff3_record.source != "WormBase" or gff3_record.type != \
+                    "gene" or gff3_record.attr["biotype"].pop() != \
+                    "protein_coding":
+                continue
+
+            gene_id = gff3_record.attr["Name"].pop()
+
+            output_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
+                gff3_record.seqid,
+                gff3_record.start-1,
+                gff3_record.end,
+                gene_id,
+                gff3_record.strand
+            ))
 
 def extract_bed(annotations, output, record_type):
     with open(output, "w") as output_handle:
@@ -70,28 +86,6 @@ def transcript_parents(gff3, output):
                 transcript,
                 name,
                 geneid
-            ))
-
-def gene_boundaries(transcript_parents, gff2, output):
-    genes = set()
-
-    for transcript_parent in open(transcript_parents, "rU").xreadlines():
-        genes.add(transcript_parent.strip().split(",")[-1])
-
-    with open(output, "w") as output_handle:
-        for gff2_record in GFF2.parse(open(gff2, "rU")):
-            if gff2_record.source != "gene" or gff2_record.type != "gene":
-                continue
-
-            geneid = re.search('((?<=Gene ")(.*?)(?=" ;))', gff2_record.attr).group(1)
-
-            if geneid not in genes:
-                continue
-
-            output_handle.write("%s,%i,%i\n" % (
-                geneid,
-                gff2_record.start-1,
-                gff2_record.end
             ))
 
 def pirna_records(gff3, output):
@@ -247,6 +241,3 @@ def is_existing_file(fileName):
             return True
     except IOError:
         return False
-
-def expr_cutoff(reads_count, min_expr):
-    return float(min_expr) * (float(reads_count) / float(1000000))
