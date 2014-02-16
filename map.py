@@ -32,12 +32,11 @@ def wrapper():
     print "Bowtie alignment records generated and formatted!\n"
 
     print "STEP 3: Post-processing alignments...\n"
-    print "Initializing Post-processor...\n"
     post_processor = Postprocessor(settings.PostprocessConfig)
     alignments = post_processor.process_alignments(alignments)
     print "Post-processing complete!\n"
 
-    print "STEP 4: Extracting gene intersections..."
+    print "STEP 4: Extracting gene intersections...\n"
     gene_intersector = GeneIntersector(settings.GeneIntersectConfig)
     alignments = gene_intersector.find_gene_intersections(alignments)
     print "Gene intersections extracted!\n"
