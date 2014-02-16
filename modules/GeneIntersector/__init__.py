@@ -19,7 +19,7 @@ class GeneIntersector():
                 "1.0",
                 "-S",
                 "-a",
-                alignments,
+                "stdin",
                 "-b",
                 self.config.genes
             ],
@@ -27,15 +27,8 @@ class GeneIntersector():
             stderr=subprocess.PIPE
         )
 
-        while True:
-            line = intersect.stdout.readline()
-
-            if line:
-                yield IntersectionRecord(line)
-            else:
-                break
-
-        print intersect.communicate()[1]
+        for result in intersect.communicate(input="\n".join(alignments))[0].splitlines():
+            yield IntersectionRecord(result)
 
     def find_gene_intersections(self, alignments):
         read_alignments = defaultdict(set)
@@ -54,7 +47,5 @@ class GeneIntersector():
             )
 
         for alignment in read_alignments.values():
-            if len(alignment) > 1:
-                continue
-
-            yield alignment.pop()
+            if len(alignment) == 1:
+                 yield alignment.pop()
