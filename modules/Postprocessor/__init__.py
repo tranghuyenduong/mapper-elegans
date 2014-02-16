@@ -1,3 +1,5 @@
+import subprocess
+
 from collections import defaultdict
 from formats.Bed import BedRecord
 
