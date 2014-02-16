@@ -45,6 +45,8 @@ class GeneIntersector():
             )
 
     def find_gene_intersections(self, alignments):
+        print "Extracting gene intersections..."
+
         self._find_gene_intersections(alignments)
 
         return set(alignment.pop() for alignment in self.gene_intersects.values() if len(alignment) == 1)
