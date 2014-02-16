@@ -8,6 +8,7 @@ class GeneIntersector():
 
     def __init__(self, config):
         self.config = config
+        self.gene_intersects = defaultdict(set)
 
     def _find_gene_intersections(self, alignments):
         intersect = subprocess.Popen(
@@ -23,18 +24,15 @@ class GeneIntersector():
                 "-b",
                 self.config.genes
             ],
+            stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
 
         for result in intersect.communicate(input="\n".join(alignments))[0].splitlines():
-            yield IntersectionRecord(result)
+            intersect_record = IntersectionRecord(result)
 
-    def find_gene_intersections(self, alignments):
-        read_alignments = defaultdict(set)
-
-        for intersect_record in self._find_gene_intersections(alignments):
-            read_alignments[intersect_record.q_name].add(
+            self.gene_intersects[intersect_record.q_name].add(
                 "%s\t%i\t%i\t%s\t%i\t%s\t%s" % (
                     intersect_record.q_chrom,
                     intersect_record.q_chrom_start,
@@ -46,6 +44,7 @@ class GeneIntersector():
                 )
             )
 
-        for alignment in read_alignments.values():
-            if len(alignment) == 1:
-                 yield alignment.pop()
+    def find_gene_intersections(self, alignments):
+        self._find_gene_intersections(alignments)
+
+        return set(alignment.pop() for alignment in self.gene_intersects.values() if len(alignment) == 1)
