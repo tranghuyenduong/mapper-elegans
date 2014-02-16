@@ -33,13 +33,12 @@ class GeneIntersector():
             intersect_record = IntersectionRecord(result)
 
             self.gene_intersects[intersect_record.q_name].add(
-                "%s\t%i\t%i\t%s\t%i\t%s\t%s" % (
+                "%s\t%i\t%i\t%s\t%i\t%s" % (
                     intersect_record.q_chrom,
                     intersect_record.q_chrom_start,
                     intersect_record.q_chrom_end,
                     intersect_record.s_name,
                     intersect_record.q_score,
-                    intersect_record.q_name,
                     intersect_record.s_strand
                 )
             )
