@@ -30,8 +30,8 @@ class Postprocessor():
         )
 
         for result in intersect.communicate(input="\n".join(alignments))[0].splitlines():
-            _, _, _, name, score, _, intersections = result.split("\t")
-            self.read_scores[name] += int(score) + int(intersections)
+            _, _, _, name, _, _, intersections = result.split("\t")
+            self.read_scores[name] += int(intersections) + 1
 
     def process_alignments(self, alignments):
         print "Post-Processing alignments..."
