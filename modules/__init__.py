@@ -218,8 +218,6 @@ def write_alignments(records, output):
     if not output:
         return
 
-    print "Generating a sorted list of alignments for reference...\n"
-
     total_records = sorted(
         [x.strip().split("\t") for x in records],
         key=lambda s: (s[0], int(s[1]))

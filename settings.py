@@ -35,8 +35,14 @@ class PostprocessConfig():
     mirna_records = "/home/sba/noelle/refs/mirna"
 
 
+class GeneIntersectConfig():
+
+    genes = "/home/sba/noelle/refs/genes"
+
+
 class Output():
 
+    temp = "/home/sba/noelle/alignments/temp"
     alignments = "/home/sba/noelle/alignments/WT_Odor_3_alignments.txt"
 
 
