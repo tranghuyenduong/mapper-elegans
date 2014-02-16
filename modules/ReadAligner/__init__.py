@@ -93,15 +93,12 @@ class ReadAligner():
             stderr=subprocess.PIPE
         )
 
-        while True:
-            line = align.stdout.readline()
+        std_out, std_err = align.communicate()
 
-            if line:
-                alignment_record = AlignmentRecord(line)
-                self.formatter.format_record(alignment_record, coding_transcript)
+        for result in std_out.splitlines():
+            alignment_record = AlignmentRecord(result)
+            self.formatter.format_record(alignment_record, coding_transcript)
 
-                yield str(alignment_record)
-            else:
-                break
+            yield str(alignment_record)
 
-        print align.communicate()[1]
+        print std_err
