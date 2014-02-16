@@ -38,14 +38,12 @@ def wrapper():
     print "Post-processing complete!\n"
 
     print "STEP 4: Extracting gene intersections..."
-    output_config = settings.Output
-    write_alignments(alignments, output_config.temp)
     gene_intersector = GeneIntersector(settings.GeneIntersectConfig)
-    alignments = set(gene_intersector.find_gene_intersections(output_config.temp))
+    alignments = gene_intersector.find_gene_intersections(alignments)
     print "Gene intersections extracted!\n"
 
     print "STEP 5: Writing alignments to file...\n"
-    print "Generating a sorted list of alignments for reference...\n"
+    output_config = settings.Output
     alignment_count = write_alignments(alignments, output_config.alignments)
     print "%i alignments written to %s." % (
         alignment_count,

@@ -31,8 +31,7 @@ class BowtieConfig():
 
 class PostprocessConfig():
 
-    pirna_records = "/home/sba/noelle/refs/pirna"
-    mirna_records = "/home/sba/noelle/refs/mirna"
+    pirna_mirna_records = "/home/sba/noelle/refs/pirna_mirna"
 
 
 class GeneIntersectConfig():
@@ -42,7 +41,6 @@ class GeneIntersectConfig():
 
 class Output():
 
-    temp = "/home/sba/noelle/alignments/temp"
     alignments = "/home/sba/noelle/alignments/WT_Odor_3_alignments.txt"
 
 
