@@ -14,13 +14,11 @@ def protein_coding_genes(gff3, output):
                     "protein_coding":
                 continue
 
-            gene_id = gff3_record.attr["Name"].pop()
-
             output_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
                 gff3_record.seqid,
                 gff3_record.start-1,
                 gff3_record.end,
-                gene_id,
+                gff3_record.attr["Name"].pop(),
                 gff3_record.strand
             ))
 
@@ -88,32 +86,29 @@ def transcript_parents(gff3, output):
                 geneid
             ))
 
-def pirna_records(gff3, output):
+def pirna_mirna_records(gff3, output):
     with open(output, "w") as output_handle:
         for gff3_record in GFF3.parse(open(gff3, "rU")):
-            if gff3_record.source != "WormBase" or gff3_record.type != \
-                    "gene" or gff3_record.attr["biotype"].pop() != "piRNA":
+            if gff3_record.source != "WormBase":
                 continue
 
-            output_handle.write("%s,%i,%i,%s\n" % (
-                gff3_record.seqid,
-                gff3_record.start-1,
-                gff3_record.end,
-                gff3_record.strand
-            ))
+            if gff3_record.type == "gene" and gff3_record.attr["biotype"].pop() == "piRNA":
+                output_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
+                    gff3_record.seqid,
+                    gff3_record.start-1,
+                    gff3_record.end,
+                    gff3_record.attr["Name"].pop(),
+                    gff3_record.strand
+                ))
 
-def mirna_records(gff3, output):
-    with open(output, "w") as output_handle:
-        for gff3_record in GFF3.parse(open(gff3, "rU")):
-            if gff3_record.source != "WormBase" or gff3_record.type != "miRNA":
-                continue
-
-            output_handle.write("%s,%i,%i,%s\n" % (
-                gff3_record.seqid,
-                gff3_record.start-1,
-                gff3_record.end,
-                gff3_record.strand
-            ))
+            elif gff3_record.type == "miRNA":
+                output_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
+                    gff3_record.seqid,
+                    gff3_record.start-5,
+                    gff3_record.end+4,
+                    gff3_record.attr["Name"].pop(),
+                    gff3_record.strand
+                ))
 
 def public_names(wormbase_records, output):
     with open(output, "w") as output_handle:

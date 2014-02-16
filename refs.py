@@ -32,13 +32,9 @@ def wrapper():
     print "\nExtracting transcript parents..."
     modules.transcript_parents(config.gff3_records, config.ref + "/transcript_parents")
 
-    # Extract piRNA records
-    print "\nExtracting piRNA records..."
-    modules.pirna_records(config.gff3_records, config.ref + "/pirna")
-
-    # Extract miRNA records
-    print "\nExtracting miRNA records..."
-    modules.mirna_records(config.gff3_records, config.ref + "/mirna")
+    # Extract piRNA/miRNA records
+    print "\nExtracting piRNA and miRNA records..."
+    modules.pirna_mirna_records(config.gff3_records, config.ref + "/pirna_mirna")
 
     # Extract public names for transcripts
     print "\nExtracting gene public names..."
