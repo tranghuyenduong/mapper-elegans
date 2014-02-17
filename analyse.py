@@ -1,16 +1,17 @@
 import settings
 import time
 
+from formats import Bed
 from modules.ReadCounter import ReadCounter
 from os import listdir, path
 
 
 def main():
-    config = settings.AnalysisSettings
+    config = settings.AnalysisConfig
 
     print "\nInitializing read counter..."
 
-    rc = ReadCounter(config.gene_boundaries, config.bin_size)
+    rc = ReadCounter(config.genes, config.bin_size)
 
     for f in listdir(config.alignments_dir):
         sampleid = f.strip("_alignments.txt")
@@ -20,7 +21,7 @@ def main():
         rc.init_sample(sampleid)
 
         count = 0
-        for alignment in open(path.join(config.alignments_dir, f), "rU").xreadlines():
+        for alignment in Bed.parse(open(path.join(config.alignments_dir, f), "rU")):
             rc.log_alignment(sampleid, alignment)
 
             count += 1

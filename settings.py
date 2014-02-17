@@ -46,7 +46,7 @@ class Output():
 
 class AnalysisConfig():
 
-    gene_boundaries = "/home/sba/noelle/refs/gene_boundaries"
+    genes = "/home/sba/noelle/refs/genes"
     bin_size = 400
     alignments_dir = "/home/sba/noelle/alignments"
     output_file = "/home/sba/noelle/data_400.csv"
