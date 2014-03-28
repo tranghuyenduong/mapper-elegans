@@ -12,9 +12,15 @@ class PreprocessConfig():
     raw_input = "/home/sba/noelle/reads/WT_Odor_3.fastq"
     force_preprocess = False
 
+    scriptminer = True
+
+    # Trim 5' barcode (For non-scriptminer methods)
+    barcode_len = 4
+
     # Clip 3' adapter
-    barcode_seq = "CAGATC"
-    adapter_seq = "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC%sATCTCGTATGCCGTCTTCTGCTTG" % barcode_seq
+    barcode_seq = "CAGATC" # For scriptminer only
+    scriptminer_adapter = "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC%sATCTCGTATGCCGTCTTCTGCTTG"
+    adapter_seq = scriptminer_adapter % barcode_seq
     min_overlap = 15
     min_seq_len = 17
     max_seq_len = 27

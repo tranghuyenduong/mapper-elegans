@@ -12,11 +12,37 @@ class Preprocessor():
         self.config = config
 
     def processed_reads(self):
-        clipped = self._clip_adapter(self.config.raw_input)
+        trimmed = self._trim_barcode(self.config.raw_input)
+        clipped = self._clip_adapter(trimmed)
         collapsed = self._collapse_reads(clipped)
 
         print self._read_size_dist(collapsed)
         return collapsed
+
+    def _trim_barcode(self, input):
+        if self.config.scriptminer:
+            return input
+
+        print "Trimming barcodes from 5\' end..."
+
+        output = "%s_trimmed.fastq" % os.path.splitext(input)[0]
+
+        if self.config.force_preprocess or not is_existing_file(output):
+            trim_seq = subprocess.Popen(
+                [
+                    "fastx_trimmer",
+                    "-f",
+                    str(self.config.barcode_len + 1),
+                    "-i",
+                    input,
+                    "-o",
+                    output
+                ]
+            )
+            trim_seq.wait()
+
+        print "Barcodes trimmed...\n"
+        return output
 
     def _clip_adapter(self, input):
         print "Clipping adapter sequences..."
