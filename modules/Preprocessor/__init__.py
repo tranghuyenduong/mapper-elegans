@@ -20,7 +20,7 @@ class Preprocessor():
         return collapsed
 
     def _trim_barcode(self, input):
-        if self.config.scriptminer:
+        if not self.config.trim_barcode:
             return input
 
         print "Trimming barcodes from 5\' end..."
