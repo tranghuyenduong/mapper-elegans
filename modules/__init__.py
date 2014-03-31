@@ -121,6 +121,17 @@ def public_names(wormbase_records, output):
                 wormbase_record.public_name,
             ))
 
+def sequence_ids(wormbase_records, output):
+    with open(output, "w") as output_handle:
+        for wormbase_record in Wormbase.parse(open(wormbase_records, "rU")):
+            if wormbase_record.taxid != 6239:
+                continue
+
+            output_handle.write("%s,%s\n" % (
+                wormbase_record.geneid,
+                wormbase_record.seqid,
+            ))
+
 def part_primary_transcripts(sorted_introns, primary_transcripts, output):
     introns = defaultdict(list)
     for intron_record in SeqIO.parse(open(sorted_introns, "rU"), "fasta"):

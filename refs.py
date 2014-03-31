@@ -40,6 +40,10 @@ def wrapper():
     print "\nExtracting gene public names..."
     modules.public_names(config.gene_ids, config.ref + "/public_names")
 
+    # Extract sequence ids for transcripts
+    print "\nExtracting gene sequence ids..."
+    modules.sequence_ids(config.gene_ids, config.ref + "/sequence_ids")
+
     # Part primary transcripts
     print "\nParting primary transcripts..."
     modules.part_primary_transcripts(config.ref + "/introns_sorted.fa", config.ref + "/primary_transcripts.fa", config.ref + "/parted_primary_transcripts")
