@@ -11,9 +11,9 @@ class Preprocessor():
     def __init__(self, config):
         self.config = config
 
-    def processed_reads(self):
-        trimmed = self._trim_barcode(self.config.raw_input)
-        clipped = self._clip_adapter(trimmed)
+    def processed_reads(self, reads, barcode):
+        trimmed = self._trim_barcode(reads)
+        clipped = self._clip_adapter(trimmed, barcode)
         collapsed = self._collapse_reads(clipped)
 
         print self._read_size_dist(collapsed)
@@ -44,7 +44,7 @@ class Preprocessor():
         print "Barcodes trimmed...\n"
         return output
 
-    def _clip_adapter(self, input):
+    def _clip_adapter(self, input, barcode):
         print "Clipping adapter sequences..."
 
         output = "%s_clipped.fastq" % os.path.splitext(input)[0]
@@ -54,7 +54,7 @@ class Preprocessor():
                 [
                     "fastx_clipper",
                     "-a",
-                    self.config.adapter_seq,
+                    self.config.template % barcode,
                     "-c",
                     "-M",
                     str(self.config.min_overlap),

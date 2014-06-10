@@ -1,5 +1,10 @@
+import os
+import re
 import settings
 import time
+
+from glob import glob
+from subprocess import Popen
 
 from modules import write_alignments
 from modules.Preprocessor import Preprocessor
@@ -7,16 +12,15 @@ from modules.ReadAligner import ReadAligner
 from modules.Postprocessor import Postprocessor
 from modules.GeneIntersector import GeneIntersector
 
-
-def wrapper():
+def main(reads, barcode, output, pre_process_config, bt_config,
+        post_process_config, gene_intersect_config):
     print "STEP 1: Pre-processing raw reads\n"
     print "Initializing Pre-processor...\n"
-    pre_processor = Preprocessor(settings.PreprocessConfig)
-    processed_reads = pre_processor.processed_reads()
+    pre_processor = Preprocessor(pre_process_config)
+    processed_reads = pre_processor.processed_reads(reads, barcode)
     print "Pre-processing complete!\n"
 
     print "STEP 2: Generating formatted Bowtie alignment records\n"
-    bt_config = settings.BowtieConfig
     alignments = set()
     read_aligner = ReadAligner(
         bt_config,
@@ -32,23 +36,40 @@ def wrapper():
     print "Bowtie alignment records generated and formatted!\n"
 
     print "STEP 3: Post-processing alignments...\n"
-    post_processor = Postprocessor(settings.PostprocessConfig)
+    post_processor = Postprocessor(post_process_config)
     alignments = post_processor.process_alignments(alignments)
     print "Post-processing complete!\n"
 
     print "STEP 4: Extracting gene intersections...\n"
-    gene_intersector = GeneIntersector(settings.GeneIntersectConfig)
+    gene_intersector = GeneIntersector(gene_intersect_config)
     alignments = gene_intersector.find_gene_intersections(alignments)
     print "Gene intersections extracted!\n"
 
     print "STEP 5: Writing alignments to file...\n"
-    output_config = settings.Output
-    alignment_count = write_alignments(alignments, output_config.alignments)
+    alignment_count = write_alignments(alignments, output)
     print "%i alignments written to %s." % (
         alignment_count,
-        output_config.alignments
+        output
     )
 
+def wrapper():
+    mapper_config = settings.MapperConfig
+    pre_process_config = settings.PreprocessConfig
+    bt_config = settings.BowtieConfig
+    post_process_config = settings.PostprocessConfig
+    gene_intersect_config = settings.GeneIntersectConfig
+
+    for f in glob(mapper_config.reads_dir + "/*.fastq"):
+        print "\nProcessing reads file %s...\n" % f
+
+        root = re.search(".*/(.*)\.fastq", f).group(1).split("_")
+        barcode = root[-1]
+        output = "%s/%s_alignments.txt" % (
+            mapper_config.alignments_dir,
+            "_".join(root[:3]))
+
+        main(f, barcode, output, pre_process_config, bt_config,
+            post_process_config, gene_intersect_config)
 
 if __name__ == "__main__":
     start_time = time.time()

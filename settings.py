@@ -8,10 +8,13 @@ class RefsConfig():
     gene_ids = base_dir + "ws240/c_elegans.PRJNA13758.WS240.geneIDs.txt"
     ref = base_dir + "refs"
 
+class MapperConfig():
+
+    reads_dir = base_dir + "reads"
+    alignments_dir = base_dir + "alignments"
 
 class PreprocessConfig():
 
-    raw_input = base_dir + "reads/WT_Odor_3.fastq"
     force_preprocess = False
 
     # Trim 5' barcode
@@ -20,10 +23,8 @@ class PreprocessConfig():
 
     # For ScriptMiner Protocol
     template = "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC%sATCTCGTATGCCGTCTTCTGCTTG"
-    barcode_seq = "CAGATC"
 
     # Clip 3' adapter
-    adapter_seq = template % barcode_seq
     min_overlap = 15
     min_seq_len = 17
     max_seq_len = 27
@@ -46,11 +47,6 @@ class PostprocessConfig():
 class GeneIntersectConfig():
 
     genes = base_dir + "refs/genes"
-
-
-class Output():
-
-    alignments = base_dir + "alignments/WT_Odor_3_alignments.txt"
 
 
 class AnalysisConfig():
