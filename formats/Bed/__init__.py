@@ -1,7 +1,7 @@
 class BedRecord():
 
     def __init__(self, record):
-        record = record.strip().split("\t")
+        _record = record.strip().split("\t")
 
         self.chrom = _record[0]
         self.chrom_start = int(_record[1])
