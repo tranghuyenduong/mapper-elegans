@@ -1,8 +1,7 @@
 class BedRecord():
 
     def __init__(self, record):
-        self.string = record.strip()
-        _record = self.string.split("\t")
+        record = record.strip().split("\t")
 
         self.chrom = _record[0]
         self.chrom_start = int(_record[1])
@@ -17,7 +16,14 @@ class BedRecord():
         self.strand = _record[5]
 
     def __str__(self):
-        return self.string
+        return "%s\t%i\t%i\t%s\t%i\t%s" % (
+            self.chrom,
+            self.chrom_start,
+            self.chrom_end,
+            self.name,
+            self.score,
+            self.strand
+        )
 
 
 def parse(handle):

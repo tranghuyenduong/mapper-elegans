@@ -8,9 +8,18 @@ class Postprocessor():
 
     def __init__(self, config):
         self.config = config
-        self.read_scores = defaultdict(int)
+        self.read_loci = defaultdict(int)
+        self.pirna_mirna_reads = defaultdict(bool)
 
-    def _calc_read_scores(self, alignments):
+    def _count_mapped_loci(self, alignments):
+        for alignment in alignments:
+            self.read_loci[alignment.name] += 1
+
+    def _correct_read_counts(self, alignments):
+        for alignment in alignments:
+            alignment.score = alignment.score / self.read_loci[alignment.name]
+
+    def _find_pirna_mirna_reads(self, alignments):
         intersect = subprocess.Popen(
             [
                 "bedtools",
@@ -29,16 +38,22 @@ class Postprocessor():
             stderr=subprocess.PIPE
         )
 
-        for result in intersect.communicate(input="\n".join(alignments))[0].splitlines():
+        stdin = "\n".join(str(i) for i in alignments)
+        for result in intersect.communicate(input=stdin)[0].splitlines():
             _, _, _, name, _, _, intersections = result.split("\t")
-            self.read_scores[name] += int(intersections) + 1
+
+            if int(intersections):
+                self.pirna_mirna_reads[name] = True
 
     def process_alignments(self, alignments):
         print "Post-Processing alignments..."
 
-        self._calc_read_scores(alignments)
+        _alignments = [BedRecord(a) for a in alignments]
+        self._count_mapped_loci(_alignments)
+        self._correct_read_counts(_alignments)
+        self._find_pirna_mirna_reads(_alignments)
 
         return set(
-            alignment for alignment in alignments if
-            self.read_scores[BedRecord(alignment).name] == 1
+            str(a) for a in _alignments
+            if not self.pirna_mirna_reads[a.name]
         )

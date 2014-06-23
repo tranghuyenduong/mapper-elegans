@@ -84,8 +84,6 @@ class ReadAligner():
             ref,
             self.reads
         ]
-        if coding_transcript:
-            bt_params.insert(6, "--nofw")
 
         align = subprocess.Popen(
             bt_params,

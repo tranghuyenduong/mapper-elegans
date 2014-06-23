@@ -1,6 +1,7 @@
 import subprocess
 
 from collections import defaultdict
+from formats.Bed import BedRecord
 from formats.Intersection import IntersectionRecord
 
 
@@ -29,7 +30,8 @@ class GeneIntersector():
             stderr=subprocess.PIPE
         )
 
-        for result in intersect.communicate(input="\n".join(alignments))[0].splitlines():
+        stdin = "\n".join(alignments)
+        for result in intersect.communicate(input=stdin)[0].splitlines():
             intersect_record = IntersectionRecord(result)
 
             self.gene_intersects[intersect_record.q_name].add(
@@ -48,4 +50,13 @@ class GeneIntersector():
 
         self._find_gene_intersections(alignments)
 
-        return set(alignment.pop() for alignment in self.gene_intersects.values() if len(alignment) == 1)
+        gi = set()
+        for intersects in self.gene_intersects.itervalues():
+            count = len(intersects)
+            _intersects = [BedRecord(i) for i in intersects]
+
+            for i in _intersects:
+                i.score = i.score / count
+                gi.add(str(i))
+
+        return gi
