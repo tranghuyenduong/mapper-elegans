@@ -1,6 +1,7 @@
 import subprocess
 
 from collections import defaultdict
+from formats.Intersection import IntersectionRecord
 
 
 class Postprocessor():
