@@ -4,7 +4,8 @@ from formats.Alignment import AlignmentRecord
 
 class BowtieRecord():
 
-    def __init__(self, read, strand, ref, start_coord, seq):
+    def __init__(self, read, strand, ref, start_coord, seq, read_qual,
+        count_ceil):
         self.read = read
         self.read_count = int(re.search("(?<=-)[\d]+", self.read).group(0))
         self.strand = strand

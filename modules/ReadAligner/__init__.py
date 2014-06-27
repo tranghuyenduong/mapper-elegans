@@ -94,7 +94,7 @@ class ReadAligner():
         std_out, std_err = align.communicate()
 
         for result in std_out.splitlines():
-            bt_record = BowtieRecord(*result.strip().split("\t")[:5])
+            bt_record = BowtieRecord(*result.strip().split("\t"))
             self.formatter.format_record(bt_record, coding_transcript)
 
             yield bt_record.to_alignment()
