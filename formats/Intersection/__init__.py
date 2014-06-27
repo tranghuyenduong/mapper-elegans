@@ -1,30 +1,30 @@
 class IntersectionRecord():
 
-    def __init__(self, record):
-        _record = record.strip().split("\t")
-
-        self.q_chrom = _record[0]
-        self.q_chrom_start = int(_record[1])
-        self.q_chrom_end = int(_record[2])
-        self.q_name = _record[3]
-
-        try:
-            self.q_score = int(_record[4])
-        except ValueError:
-            self.q_score = _record[4]
-
-        self.q_strand = _record[5]
-
-        self.s_chrom = _record[6]
-        self.s_chrom_start = int(_record[7])
-        self.s_chrom_end = int(_record[8])
-        self.s_name = _record[9]
+    def __init__(self, q_chrom, q_chrom_start, q_chrom_end, q_name, q_score,
+        q_strand, s_chrom, s_chrom_start, s_chrom_end, s_name, s_score,
+        s_strand, overlap):
+        self.q_chrom = q_chrom
+        self.q_chrom_start = int(q_chrom_start)
+        self.q_chrom_end = int(q_chrom_end)
+        self.q_name = q_name
 
         try:
-            self.s_score = int(_record[10])
+            self.q_score = int(q_score)
         except ValueError:
-            self.s_score = _record[10]
+            self.q_score = q_score
 
-        self.s_strand = _record[11]
+        self.q_strand = q_strand
 
-        self.overlap = int(_record[12])
+        self.s_chrom = s_chrom
+        self.s_chrom_start = int(s_chrom_start)
+        self.s_chrom_end = int(s_chrom_end)
+        self.s_name = s_name
+
+        try:
+            self.s_score = int(s_score)
+        except ValueError:
+            self.s_score = s_score
+
+        self.s_strand = s_strand
+
+        self.overlap = int(overlap)

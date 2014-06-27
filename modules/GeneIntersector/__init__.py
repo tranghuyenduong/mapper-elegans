@@ -1,7 +1,5 @@
 import subprocess
 
-from collections import defaultdict
-from formats.Bed import BedRecord
 from formats.Intersection import IntersectionRecord
 
 
@@ -9,9 +7,8 @@ class GeneIntersector():
 
     def __init__(self, config):
         self.config = config
-        self.gene_intersects = defaultdict(set)
 
-    def _find_gene_intersections(self, alignments):
+    def _find_gene_intersections(self, gene_map):
         intersect = subprocess.Popen(
             [
                 "bedtools",
@@ -30,33 +27,27 @@ class GeneIntersector():
             stderr=subprocess.PIPE
         )
 
-        stdin = "\n".join(alignments)
+        stdin = "\n".join(str(a) for a in gene_map)
         for result in intersect.communicate(input=stdin)[0].splitlines():
-            intersect_record = IntersectionRecord(result)
+            ir = IntersectionRecord(*result.strip().split())
 
-            self.gene_intersects[intersect_record.q_name].add(
-                "%s\t%i\t%i\t%s\t%i\t%s" % (
-                    intersect_record.q_chrom,
-                    intersect_record.q_chrom_start,
-                    intersect_record.q_chrom_end,
-                    intersect_record.s_name,
-                    intersect_record.q_score,
-                    intersect_record.s_strand
-                )
-            )
+            gene_map[(
+                ir.q_chrom,
+                ir.q_chrom_start,
+                ir.q_chrom_end,
+                ir.q_strand
+            )].append(ir.s_name)
+
+    def _correct_read_counts(self, gene_map):
+        for a in gene_map:
+            if a.genes:
+                a.score = a.score / len(a.genes)
 
     def find_gene_intersections(self, alignments):
         print "Extracting gene intersections..."
 
-        self._find_gene_intersections(alignments)
+        gene_map = {a: a.genes for a in alignments}
+        self._find_gene_intersections(gene_map)
+        self._correct_read_counts(gene_map)
 
-        gi = set()
-        for intersects in self.gene_intersects.itervalues():
-            count = len(intersects)
-            _intersects = [BedRecord(i) for i in intersects]
-
-            for i in _intersects:
-                i.score = i.score / count
-                gi.add(str(i))
-
-        return gi
+        return set(a for a in alignments if a.genes)

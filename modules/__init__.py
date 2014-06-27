@@ -224,18 +224,14 @@ def write_alignments(records, output):
     if not output:
         return
 
-    total_records = sorted(
-        [x.strip().split("\t") for x in records],
-        key=lambda s: (s[0], int(s[1]))
-    )
+    all_alignments = sorted(records, key=lambda s: (s.chrom, s.chrom_start))
 
     write_count = 0
-
     with open(output, "w") as output_handle:
-        for record in total_records:
-            output_handle.write("%s\n" % "\t".join(record))
-
-            write_count += 1
+        for alignment in all_alignments:
+            for entry in alignment.summary():
+                output_handle.write(entry)
+                write_count += 1
 
     return write_count
 

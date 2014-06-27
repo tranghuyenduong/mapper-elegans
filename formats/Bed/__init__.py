@@ -1,19 +1,17 @@
 class BedRecord():
 
-    def __init__(self, record):
-        _record = record.strip().split("\t")
-
-        self.chrom = _record[0]
-        self.chrom_start = int(_record[1])
-        self.chrom_end = int(_record[2])
-        self.name = _record[3]
+    def __init__(self, chrom, chrom_start, chrom_end, name, score, strand):
+        self.chrom = chrom
+        self.chrom_start = int(chrom_start)
+        self.chrom_end = int(chrom_end)
+        self.name = name
 
         try:
-            self.score = int(_record[4])
+            self.score = int(score)
         except ValueError:
-            self.score = _record[4]
+            self.score = score
 
-        self.strand = _record[5]
+        self.strand = strand
 
     def __str__(self):
         return "%s\t%i\t%i\t%s\t%i\t%s" % (
@@ -28,4 +26,4 @@ class BedRecord():
 
 def parse(handle):
     for record in handle.xreadlines():
-        yield BedRecord(record)
+        yield BedRecord(*record.strip().split("\t"))

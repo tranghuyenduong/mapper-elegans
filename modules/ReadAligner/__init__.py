@@ -1,7 +1,7 @@
 import subprocess
 
 from collections import defaultdict
-from formats.Alignment import AlignmentRecord
+from formats.Bowtie import BowtieRecord
 
 
 class RecordFormatter():
@@ -94,9 +94,9 @@ class ReadAligner():
         std_out, std_err = align.communicate()
 
         for result in std_out.splitlines():
-            alignment_record = AlignmentRecord(result)
-            self.formatter.format_record(alignment_record, coding_transcript)
+            bt_record = BowtieRecord(*result.strip().split("\t")[:5])
+            self.formatter.format_record(bt_record, coding_transcript)
 
-            yield str(alignment_record)
+            yield bt_record.to_alignment()
 
         print std_err

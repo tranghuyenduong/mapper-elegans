@@ -1,7 +1,6 @@
 import subprocess
 
 from collections import defaultdict
-from formats.Bed import BedRecord
 
 
 class Postprocessor():
@@ -17,7 +16,12 @@ class Postprocessor():
 
     def _correct_read_counts(self, alignments):
         for alignment in alignments:
-            alignment.score = alignment.score / self.read_loci[alignment.name]
+            mapped_loci = self.read_loci[alignment.name]
+
+            if mapped_loci > 1:
+                alignment.is_multi_mapped = True
+
+            alignment.score = alignment.score / mapped_loci
 
     def _find_pirna_mirna_reads(self, alignments):
         intersect = subprocess.Popen(
@@ -48,12 +52,8 @@ class Postprocessor():
     def process_alignments(self, alignments):
         print "Post-Processing alignments..."
 
-        _alignments = [BedRecord(a) for a in alignments]
-        self._count_mapped_loci(_alignments)
-        self._correct_read_counts(_alignments)
-        self._find_pirna_mirna_reads(_alignments)
+        self._count_mapped_loci(alignments)
+        self._correct_read_counts(alignments)
+        self._find_pirna_mirna_reads(alignments)
 
-        return set(
-            str(a) for a in _alignments
-            if not self.pirna_mirna_reads[a.name]
-        )
+        return set(a for a in alignments if not self.pirna_mirna_reads[a.name])
