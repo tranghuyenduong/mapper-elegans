@@ -1,3 +1,4 @@
+import os
 import re
 import subprocess
 
@@ -235,9 +236,18 @@ def write_alignments(records, output):
 
     return write_count
 
-def is_existing_file(fileName):
+def is_existing_file(file_name):
     try:
-        with open(fileName):
+        with open(file_name):
             return True
     except IOError:
         return False
+
+def new_or_existing_tmp_dir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    return path
+
+def base_file_name(path):
+    return os.path.splitext(os.path.basename(path))[0]

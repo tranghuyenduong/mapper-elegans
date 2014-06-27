@@ -1,19 +1,26 @@
-base_dir = "/home/sba/bioinf/noelle/"
+from os import path
+
+BASE_DIR = "/home/sba/bioinf/noelle"
+
+def P(pathname):
+    return path.join(BASE_DIR, pathname)
 
 class RefsConfig():
 
-    genome = base_dir + "ws240/c_elegans.PRJNA13758.WS240.genomic.fa"
-    gff2_records = base_dir + "ws240/c_elegans.PRJNA13758.WS240.annotations.gff2"
-    gff3_records = base_dir + "ws240/c_elegans.PRJNA13758.WS240.annotations.gff3"
-    gene_ids = base_dir + "ws240/c_elegans.PRJNA13758.WS240.geneIDs.txt"
-    ref = base_dir + "refs"
+    genome = P("ws240/c_elegans.PRJNA13758.WS240.genomic.fa")
+    gff2_records = P("ws240/c_elegans.PRJNA13758.WS240.annotations.gff2")
+    gff3_records = P("ws240/c_elegans.PRJNA13758.WS240.annotations.gff3")
+    gene_ids = P("ws240/c_elegans.PRJNA13758.WS240.geneIDs.txt")
+    ref = P("refs")
 
 class MapperConfig():
 
-    reads_dir = base_dir + "reads"
-    alignments_dir = base_dir + "alignments"
+    reads_dir = P("reads")
+    alignments_dir = P("alignments")
 
 class PreprocessConfig():
+
+    tmp_dir = P("tmp")
 
     force_preprocess = False
 
@@ -32,26 +39,26 @@ class PreprocessConfig():
 
 class BowtieConfig():
 
-    genome_ref = base_dir + "refs/bt/genome"
-    coding_transcripts_ref = base_dir + "refs/bt/coding_transcripts"
-    transcript_bed = base_dir + "refs/primary_transcripts.bed"
-    transcript_parents = base_dir + "refs/transcript_parents"
-    exon_coords = base_dir + "refs/exon_coords"
+    genome_ref = P("refs/bt/genome")
+    coding_transcripts_ref = P("refs/bt/coding_transcripts")
+    transcript_bed = P("refs/primary_transcripts.bed")
+    transcript_parents = P("refs/transcript_parents")
+    exon_coords = P("refs/exon_coords")
 
 
 class PostprocessConfig():
 
-    pirna_mirna_records = base_dir + "refs/pirna_mirna"
+    pirna_mirna_records = P("refs/pirna_mirna")
 
 
 class GeneIntersectConfig():
 
-    genes = base_dir + "refs/genes"
+    genes = P("refs/genes")
 
 
 class AnalysisConfig():
 
-    genes = base_dir + "refs/genes"
+    genes = P("refs/genes")
     bin_size = 400
-    alignments_dir = base_dir + "alignments"
-    output_file = base_dir + "data_400.csv"
+    alignments_dir = P("alignments")
+    output_file = P("data_400.csv")

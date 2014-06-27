@@ -1,15 +1,16 @@
-import os
 import subprocess
 
 from Bio import SeqIO
 from collections import defaultdict
-from modules import is_existing_file
+from modules import is_existing_file, new_or_existing_tmp_dir, base_file_name
+from os import path
 
 
 class Preprocessor():
 
     def __init__(self, config):
         self.config = config
+        self.tmp = new_or_existing_tmp_dir(self.config.tmp_dir)
 
     def processed_reads(self, reads, barcode):
         trimmed = self._trim_barcode(reads)
@@ -25,7 +26,7 @@ class Preprocessor():
 
         print "Trimming barcodes from 5\' end..."
 
-        output = "%s_trimmed.fastq" % os.path.splitext(input)[0]
+        output = path.join(self.tmp, base_file_name(input) + "_trimmed.fq")
 
         if self.config.force_preprocess or not is_existing_file(output):
             trim_seq = subprocess.Popen(
@@ -47,7 +48,7 @@ class Preprocessor():
     def _clip_adapter(self, input, barcode):
         print "Clipping adapter sequences..."
 
-        output = "%s_clipped.fastq" % os.path.splitext(input)[0]
+        output = path.join(self.tmp, base_file_name(input) + "_clipped.fq")
 
         if self.config.force_preprocess or not is_existing_file(output):
             clip_seq = subprocess.Popen(
@@ -75,7 +76,7 @@ class Preprocessor():
     def _collapse_reads(self, input):
         print "Collapsing reads..."
 
-        output = "%s_collapsed.fa" % os.path.splitext(input)[0]
+        output = path.join(self.tmp, base_file_name(input) + "_collapsed.fq")
 
         if self.config.force_preprocess or not is_existing_file(output):
             total_reads = 0
