@@ -26,7 +26,7 @@ class Postprocessor():
                 "intersect",
                 "-wao",
                 "-f",
-                "1.0",
+                "0.9",
                 "-s",
                 "-a",
                 "stdin",
@@ -42,17 +42,18 @@ class Postprocessor():
         for result in intersect.communicate(input=stdin)[0].splitlines():
             ir = IntersectionRecord(*result.strip().split())
 
-            pp_map[(
-                ir.q_chrom,
-                ir.q_chrom_start,
-                ir.q_chrom_end,
-                ir.q_strand
-            )].append(ir.s_name)
+            if ir.s_name != ".":
+                pp_map[(
+                    ir.q_chrom,
+                    ir.q_chrom_start,
+                    ir.q_chrom_end,
+                    ir.q_strand
+                )].append(ir.s_name)
 
     def process_alignments(self, alignments):
         print "Post-Processing alignments..."
 
-        pp_map = {a: a.genes for a in alignments}
+        pp_map = {a: a.pirnas_mirnas for a in alignments}
 
         self._count_mapped_loci(pp_map)
         self._correct_read_counts(pp_map)

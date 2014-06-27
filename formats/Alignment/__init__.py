@@ -8,8 +8,8 @@ class AlignmentRecord(BedRecord):
             strand)
 
         self.mapped_loci = 0
-        self.genes = []
         self.pirnas_mirnas = []
+        self.genes = []
 
     @property
     def _unique_identifier(self):
@@ -39,7 +39,7 @@ class AlignmentRecord(BedRecord):
 
     @property
     def _is_pirna_mirna_read(self):
-        return len(self.pirnas_mirnas)
+        return len(self.pirnas_mirnas) > 0
 
     def summary(self):
         for gene in self.genes:
