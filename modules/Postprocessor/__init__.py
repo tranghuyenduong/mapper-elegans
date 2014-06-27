@@ -8,27 +8,22 @@ class Postprocessor():
     def __init__(self, config):
         self.config = config
         self.read_loci = defaultdict(int)
-        self.pirna_mirna_reads = defaultdict(bool)
 
-    def _count_mapped_loci(self, alignments):
-        for alignment in alignments:
-            self.read_loci[alignment.name] += 1
+    def _count_mapped_loci(self, pp_map):
+        for a in pp_map:
+            self.read_loci[a.name] += 1
 
-    def _correct_read_counts(self, alignments):
-        for alignment in alignments:
-            mapped_loci = self.read_loci[alignment.name]
+    def _correct_read_counts(self, pp_map):
+        for a in pp_map:
+            a.mapped_loci = self.read_loci[a.name]
+            a.score = a.score / a.mapped_loci
 
-            if mapped_loci > 1:
-                alignment.is_multi_mapped = True
-
-            alignment.score = alignment.score / mapped_loci
-
-    def _find_pirna_mirna_reads(self, alignments):
+    def _find_pirna_mirna_reads(self, pp_map):
         intersect = subprocess.Popen(
             [
                 "bedtools",
                 "intersect",
-                "-c",
+                "-wao",
                 "-f",
                 "1.0",
                 "-s",
@@ -42,18 +37,24 @@ class Postprocessor():
             stderr=subprocess.PIPE
         )
 
-        stdin = "\n".join(str(i) for i in alignments)
+        stdin = "\n".join(str(i) for i in pp_map)
         for result in intersect.communicate(input=stdin)[0].splitlines():
-            _, _, _, name, _, _, intersections = result.split("\t")
+            ir = IntersectionRecord(*result.strip().split())
 
-            if int(intersections):
-                self.pirna_mirna_reads[name] = True
+            pp_map[(
+                ir.q_chrom,
+                ir.q_chrom_start,
+                ir.q_chrom_end,
+                ir.q_strand
+            )].append(ir.s_name)
 
     def process_alignments(self, alignments):
         print "Post-Processing alignments..."
 
-        self._count_mapped_loci(alignments)
-        self._correct_read_counts(alignments)
-        self._find_pirna_mirna_reads(alignments)
+        pp_map = {a: a.genes for a in alignments}
 
-        return set(a for a in alignments if not self.pirna_mirna_reads[a.name])
+        self._count_mapped_loci(pp_map)
+        self._correct_read_counts(pp_map)
+        self._find_pirna_mirna_reads(pp_map)
+
+        return set(a for a in pp_map)

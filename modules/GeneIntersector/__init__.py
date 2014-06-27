@@ -8,7 +8,7 @@ class GeneIntersector():
     def __init__(self, config):
         self.config = config
 
-    def _find_gene_intersections(self, gene_map):
+    def _find_gene_intersections(self, gi_map):
         intersect = subprocess.Popen(
             [
                 "bedtools",
@@ -27,27 +27,27 @@ class GeneIntersector():
             stderr=subprocess.PIPE
         )
 
-        stdin = "\n".join(str(a) for a in gene_map)
+        stdin = "\n".join(str(a) for a in gi_map)
         for result in intersect.communicate(input=stdin)[0].splitlines():
             ir = IntersectionRecord(*result.strip().split())
 
-            gene_map[(
+            gi_map[(
                 ir.q_chrom,
                 ir.q_chrom_start,
                 ir.q_chrom_end,
                 ir.q_strand
             )].append(ir.s_name)
 
-    def _correct_read_counts(self, gene_map):
-        for a in gene_map:
+    def _correct_read_counts(self, gi_map):
+        for a in gi_map:
             if a.genes:
                 a.score = a.score / len(a.genes)
 
     def find_gene_intersections(self, alignments):
         print "Extracting gene intersections..."
 
-        gene_map = {a: a.genes for a in alignments}
-        self._find_gene_intersections(gene_map)
-        self._correct_read_counts(gene_map)
+        gi_map = {a: a.genes for a in alignments}
+        self._find_gene_intersections(gi_map)
+        self._correct_read_counts(gi_map)
 
-        return set(a for a in alignments if a.genes)
+        return set(a for a in gi_map if a.genes)

@@ -7,8 +7,9 @@ class AlignmentRecord(BedRecord):
         BedRecord.__init__(self, chrom, chrom_start, chrom_end, name, score,
             strand)
 
-        self.is_multi_mapped = False
+        self.mapped_loci = 0
         self.genes = []
+        self.pirnas_mirnas = []
 
     @property
     def _unique_identifier(self):
@@ -29,18 +30,30 @@ class AlignmentRecord(BedRecord):
         return self._unique_identifier != x
 
     @property
-    def is_multi_gene(self):
+    def _is_multi_mapped(self):
+        return self.mapped_loci > 1
+
+    @property
+    def _is_multi_gene(self):
         return len(self.genes) > 1
+
+    @property
+    def _is_pirna_mirna_read(self):
+        return len(self.pirnas_mirnas)
 
     def summary(self):
         for gene in self.genes:
-            yield "%s\t%i\t%i\t%s\t%i\t%s\t%s\t%s\n" % (
+            yield "%s\t%i\t%i\t%s\t%i\t%s\t%i\t%s\t%s\t%s\t%s\t%s\n" % (
                 self.chrom,
                 self.chrom_start,
                 self.chrom_end,
-                gene,
+                self.name,
                 self.score,
                 self.strand,
-                self.is_multi_mapped,
-                self.is_multi_gene
+                self.mapped_loci,
+                self._is_multi_mapped,
+                gene,
+                self._is_multi_gene,
+                ",".join(self.pirnas_mirnas),
+                self._is_pirna_mirna_read
             )
