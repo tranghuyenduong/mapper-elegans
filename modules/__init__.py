@@ -230,9 +230,8 @@ def write_alignments(records, output):
     write_count = 0
     with open(output, "w") as output_handle:
         for alignment in all_alignments:
-            for entry in alignment.summary():
-                output_handle.write(entry)
-                write_count += 1
+            output_handle.write(alignment.summary)
+            write_count += 1
 
     return write_count
 

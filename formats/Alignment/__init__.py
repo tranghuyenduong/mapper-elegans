@@ -41,9 +41,9 @@ class AlignmentRecord(BedRecord):
     def _is_pirna_mirna_read(self):
         return len(self.pirnas_mirnas) > 0
 
+    @property
     def summary(self):
-        for gene in self.genes:
-            yield "%s\t%i\t%i\t%s\t%i\t%s\t%i\t%s\t%s\t%s\t%s\t%s\n" % (
+        return "".join("%s\t%i\t%i\t%s\t%i\t%s\t%i\t%s\t%s\t%s\t%s\t%s\n" % (
                 self.chrom,
                 self.chrom_start,
                 self.chrom_end,
@@ -52,8 +52,8 @@ class AlignmentRecord(BedRecord):
                 self.strand,
                 self.mapped_loci,
                 self._is_multi_mapped,
-                gene,
+                g,
                 self._is_multi_gene,
                 ",".join(self.pirnas_mirnas),
                 self._is_pirna_mirna_read
-            )
+            ) for g in self.genes)
