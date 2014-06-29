@@ -18,6 +18,7 @@ def main(reads, barcode, output, pre_process_config, bt_config,
     print "Initializing Pre-processor...\n"
     pre_processor = Preprocessor(pre_process_config)
     processed_reads = pre_processor.processed_reads(reads, barcode)
+    del pre_processor
     print "Pre-processing complete!\n"
 
     print "STEP 2: Generating formatted Bowtie alignment records\n"
@@ -33,20 +34,24 @@ def main(reads, barcode, output, pre_process_config, bt_config,
     print "Aligning to coding transcripts...\n"
     for alignment in read_aligner.align_to(bt_config.coding_transcripts_ref, True):
         alignments.add(alignment)
+    del read_aligner
     print "Bowtie alignment records generated and formatted!\n"
 
     print "STEP 3: Post-processing alignments...\n"
     post_processor = Postprocessor(post_process_config)
     alignments = post_processor.process_alignments(alignments)
+    del post_processor
     print "Post-processing complete!\n"
 
     print "STEP 4: Extracting gene intersections...\n"
     gene_intersector = GeneIntersector(gene_intersect_config)
     alignments = gene_intersector.find_gene_intersections(alignments)
+    del gene_intersector
     print "Gene intersections extracted!\n"
 
     print "STEP 5: Writing alignments to file...\n"
     alignment_count = write_alignments(alignments, output)
+    del alignments
     print "%i alignments written to %s." % (
         alignment_count,
         output
