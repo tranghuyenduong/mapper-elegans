@@ -34,13 +34,8 @@ class ReadCounter():
     def init_sample(self, sampleid):
         self.samples.append(sampleid)
 
-    def log_alignment(self, sampleid, alignment):
-        self.counter[
-            self._find_bin(
-                alignment.name,
-                alignment.chrom_start if alignment.strand == "+" else alignment.chrom_end
-            )
-        ][sampleid] += alignment.score
+    def log_alignment(self, sampleid, gene, coord, score):
+        self.counter[self._find_bin(gene, coord)][sampleid] += score
 
     def write_counter(self, output):
         counter = sorted(self.counter.iteritems(), key=lambda s: (s[0][0], s[0][1]))

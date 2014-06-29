@@ -60,5 +60,8 @@ class AnalysisConfig():
 
     genes = P("refs/genes")
     bin_size = 400
+    exclude_multi_mapped = True
+    exclude_pirna_mirna = True
+    exclude_multi_gene = True
     alignments_dir = P("alignments")
     output_file = P("data_400.csv")

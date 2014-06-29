@@ -1,7 +1,6 @@
 import settings
 import time
 
-from formats import Bed
 from modules.ReadCounter import ReadCounter
 from os import listdir, path
 
@@ -21,12 +20,29 @@ def main():
         rc.init_sample(sampleid)
 
         count = 0
-        for alignment in Bed.parse(open(path.join(config.alignments_dir, f), "rU")):
-            rc.log_alignment(sampleid, alignment)
+        for alignment in open(path.join(config.alignments_dir, f), "rU"):
+            _, chrom_start, chrom_end, _, score, strand, _, \
+                is_multi_mapped, gene, is_multi_gene, _, \
+                is_pirna_mirna_read = alignment.strip().split("\t")
 
+            if config.exclude_multi_mapped and is_multi_mapped == "True":
+                continue
+
+            if config.exclude_pirna_mirna and is_pirna_mirna_read == "True":
+                continue
+
+            if config.exclude_multi_gene and is_multi_gene == "True":
+                continue
+
+            rc.log_alignment(
+                sampleid,
+                gene,
+                int(chrom_start if strand == "-" else chrom_end),
+                int(score)
+            )
             count += 1
 
-        print "%i unique alignments logged for sample %s." % (count, sampleid)
+        print "%i alignments logged for sample %s." % (count, sampleid)
 
     print "\nWriting read counts table to %s..." % config.output_file
 
