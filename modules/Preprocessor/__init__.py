@@ -1,3 +1,4 @@
+import re
 import subprocess
 
 from Bio import SeqIO
@@ -124,7 +125,8 @@ class Preprocessor():
 
         for record in SeqIO.parse(open(reads, "rU"), "fasta"):
             record_len = len(record.seq)
-            read_sizes[record_len] += 1
+            record_count = int(re.search("(?<=-)[\d]+", record.name).group(0))
+            read_sizes[record_len] += record_count
 
         s = "Read Size Distribution:\n"
 
