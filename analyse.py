@@ -19,7 +19,8 @@ def main():
 
         rc.init_sample(sampleid)
 
-        count = 0
+        alignments = 0
+        reads = 0
         for alignment in open(path.join(config.alignments_dir, f), "rU"):
             _, chrom_start, chrom_end, _, score, strand, _, \
                 is_multi_mapped, gene, is_multi_gene, _, \
@@ -40,9 +41,11 @@ def main():
                 int(chrom_start if strand == "-" else chrom_end),
                 int(score)
             )
-            count += 1
 
-        print "%i alignments logged for sample %s." % (count, sampleid)
+            alignments += 1
+            reads += int(score)
+
+        print "%i alignments representing %i reads logged for sample %s." % (alignments, reads, sampleid)
 
     print "\nWriting read counts table to %s..." % config.output_file
 
