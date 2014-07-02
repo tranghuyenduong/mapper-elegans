@@ -26,7 +26,7 @@ class Postprocessor():
                 "intersect",
                 "-wao",
                 "-f",
-                "0.9",
+                "1.0",
                 "-s",
                 "-a",
                 "stdin",
