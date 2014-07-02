@@ -14,12 +14,12 @@ class BedRecord():
         self.strand = strand
 
     def __str__(self):
-        return "%s\t%i\t%i\t%s\t%i\t%s" % (
+        return "%s\t%i\t%i\t%s\t%s\t%s" % (
             self.chrom,
             self.chrom_start,
             self.chrom_end,
             self.name,
-            self.score,
+            str(self.score),
             self.strand
         )
 
