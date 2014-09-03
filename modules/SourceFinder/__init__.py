@@ -29,7 +29,7 @@ class SourceFinder(object):
 
     @property
     def _intron_or_intergenic_or_intron_exon_alignments(self):
-        return self.genome_alignments - cds_alignments
+        return self.genome_alignments - self.cds_alignments
 
     def _classify_all_alignments(self):
         self._classify_intron_exon_alignments()
