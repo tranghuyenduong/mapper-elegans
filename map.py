@@ -22,24 +22,26 @@ def main(reads, barcode, output, pre_process_config, bt_config,
     print "Pre-processing complete!\n"
 
     print "STEP 2: Generating formatted Bowtie alignment records\n"
-    alignments = set()
+    genome = set()
+    cds = set()
+
     read_aligner = ReadAligner(
         bt_config,
         processed_reads
     )
     print "Aligning to genome...\n"
     for alignment in read_aligner.align_to(bt_config.genome_ref):
-        alignments.add(alignment)
+        genome.add(alignment)
 
     print "Aligning to coding transcripts...\n"
     for alignment in read_aligner.align_to(bt_config.coding_transcripts_ref, True):
-        alignments.add(alignment)
+        cds.add(alignment)
     del read_aligner
     print "Bowtie alignment records generated and formatted!\n"
 
     print "STEP 3: Post-processing alignments...\n"
     post_processor = Postprocessor(post_process_config)
-    alignments = post_processor.process_alignments(alignments)
+    alignments = post_processor.process_alignments(genome|cds)
     del post_processor
     print "Post-processing complete!\n"
 
