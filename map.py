@@ -14,7 +14,7 @@ from modules.GeneIntersector import GeneIntersector
 from modules.SourceFinder import SourceFinder
 
 def main(reads, barcode, output, pre_process_config, bt_config,
-        post_process_config, gene_intersect_config):
+        sf_config, post_process_config, gene_intersect_config):
     print "STEP 1: Pre-processing raw reads\n"
     print "Initializing Pre-processor...\n"
     pre_processor = Preprocessor(pre_process_config)
@@ -35,14 +35,17 @@ def main(reads, barcode, output, pre_process_config, bt_config,
         genome.add(alignment)
 
     print "Aligning to coding transcripts...\n"
-    for alignment in read_aligner.align_to(bt_config.coding_transcripts_ref, True):
+    for alignment in read_aligner.align_to(bt_config.coding_transcripts_ref,
+                                           True):
         cds.add(alignment)
     del read_aligner
     print "Bowtie alignment records generated and formatted!\n"
 
     print "STEP 3: Post-processing alignments...\n"
-    source_finder = SourceFinder(genome, cds)
-    alignments = source_finder.all_alignments()
+    source_finder = SourceFinder(sf_config)
+    source_finder.classify_all_alignments(genome, cds)
+    alignments = source_finder.all_alignments
+    del source_finder
 
     post_processor = Postprocessor(post_process_config)
     alignments = post_processor.process_alignments(alignments)
@@ -67,6 +70,7 @@ def wrapper():
     mapper_config = settings.MapperConfig
     pre_process_config = settings.PreprocessConfig
     bt_config = settings.BowtieConfig
+    sf_config = settings.SourceFinderConfig
     post_process_config = settings.PostprocessConfig
     gene_intersect_config = settings.GeneIntersectConfig
 

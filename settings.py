@@ -46,6 +46,11 @@ class BowtieConfig():
     exon_coords = P("refs/exon_coords")
 
 
+class SourceFinderConfig():
+
+    exons = P("refs/exons.bed")
+
+
 class PostprocessConfig():
 
     pirna_mirna_records = P("refs/pirna_mirna")

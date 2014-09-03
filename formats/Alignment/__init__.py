@@ -46,13 +46,15 @@ class AlignmentRecord(BedRecord):
 
     @property
     def summary(self):
-        return "".join("%s\t%i\t%i\t%s\t%i\t%s\t%i\t%s\t%s\t%s\t%s\t%s\n" % (
+        return "".join(
+            "%s\t%i\t%i\t%s\t%i\t%s\t%s\t%i\t%s\t%s\t%s\t%s\t%s\n" % (
                 self.chrom,
                 self.chrom_start,
                 self.chrom_end,
                 self.name,
                 self.score,
                 self.strand,
+                self.source,
                 self.mapped_loci,
                 self._is_multi_mapped,
                 g,
