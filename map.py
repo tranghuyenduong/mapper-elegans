@@ -11,6 +11,7 @@ from modules.Preprocessor import Preprocessor
 from modules.ReadAligner import ReadAligner
 from modules.Postprocessor import Postprocessor
 from modules.GeneIntersector import GeneIntersector
+from modules.SourceFinder import SourceFinder
 
 def main(reads, barcode, output, pre_process_config, bt_config,
         post_process_config, gene_intersect_config):
@@ -40,8 +41,11 @@ def main(reads, barcode, output, pre_process_config, bt_config,
     print "Bowtie alignment records generated and formatted!\n"
 
     print "STEP 3: Post-processing alignments...\n"
+    source_finder = SourceFinder(genome, cds)
+    alignments = source_finder.all_alignments()
+
     post_processor = Postprocessor(post_process_config)
-    alignments = post_processor.process_alignments(genome|cds)
+    alignments = post_processor.process_alignments(alignments)
     del post_processor
     print "Post-processing complete!\n"
 

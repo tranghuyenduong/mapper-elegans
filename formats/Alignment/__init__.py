@@ -11,6 +11,9 @@ class AlignmentRecord(BedRecord):
         self.pirnas_mirnas = []
         self.genes = []
 
+        # Populated by the SourceFinder module
+        self.source = None
+
     @property
     def _unique_identifier(self):
         return (
