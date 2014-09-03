@@ -84,7 +84,7 @@ def wrapper():
             "_".join(root[:3]))
 
         main(f, barcode, output, pre_process_config, bt_config,
-            post_process_config, gene_intersect_config)
+             sf_config, post_process_config, gene_intersect_config)
 
 if __name__ == "__main__":
     start_time = time.time()
