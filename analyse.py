@@ -22,7 +22,7 @@ def main():
         alignments = 0
         reads = 0
         for alignment in open(path.join(config.alignments_dir, f), "rU"):
-            _, chrom_start, chrom_end, _, score, strand, _, \
+            _, chrom_start, chrom_end, _, score, strand, source, _, \
                 is_multi_mapped, gene, is_multi_gene, _, \
                 is_pirna_mirna_read = alignment.strip().split("\t")
 
