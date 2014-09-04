@@ -18,6 +18,8 @@ class SourceFinder(object):
         self.exon_alignments = set()
 
     def classify_all_alignments(self, genome_alignments, cds_alignments):
+        print "Classifying alignments..."
+
         self.genome_alignments = genome_alignments
         self.cds_alignments = cds_alignments
 
@@ -25,7 +27,10 @@ class SourceFinder(object):
 
     @property
     def all_alignments(self):
-        return self.genome_alignments|self.cds_alignments
+        return (self.intron_exon_alignments |
+                self.intron_or_intergenic_alignments |
+                self.exon_exon_alignments |
+                self.exon_alignments)
 
     @property
     def _intron_or_intergenic_or_intron_exon_alignments(self):
@@ -39,7 +44,7 @@ class SourceFinder(object):
 
     def _classify_intron_exon_alignments(self):
         iiie = self._intron_or_intergenic_or_intron_exon_alignments
-        temp = {a: a.source for a in iiie}
+        temp = {a: a for a in iiie}
 
         intersect = subprocess.Popen(
             [
@@ -61,15 +66,15 @@ class SourceFinder(object):
         for result in intersect.communicate(input=stdin)[0].splitlines():
             ir = IntersectionRecord(*result.strip().split())
 
-            temp[(
+            match = temp[(
                 ir.q_chrom,
                 ir.q_chrom_start,
                 ir.q_chrom_end,
                 ir.q_strand
-            )] = 'Intron-Exon'
+            )]
 
-        self.intron_exon_alignments = set(a for a in iiie
-                                          if a.source == 'Intron-Exon')
+            match.source = 'Intron-Exon'
+            self.intron_exon_alignments.add(match)
 
     def _classify_intron_or_intergenic_alignments(self):
         self.intron_or_intergenic_alignments = \

@@ -41,24 +41,26 @@ def main(reads, barcode, output, pre_process_config, bt_config,
     del read_aligner
     print "Bowtie alignment records generated and formatted!\n"
 
-    print "STEP 3: Post-processing alignments...\n"
+    print "STEP 3: Classifying alignments...\n"
     source_finder = SourceFinder(sf_config)
     source_finder.classify_all_alignments(genome, cds)
     alignments = source_finder.all_alignments
     del source_finder
+    print "Classification complete!\n"
 
+    print "STEP 4: Post-processing alignments...\n"
     post_processor = Postprocessor(post_process_config)
     alignments = post_processor.process_alignments(alignments)
     del post_processor
     print "Post-processing complete!\n"
 
-    print "STEP 4: Extracting gene intersections...\n"
+    print "STEP 5: Extracting gene intersections...\n"
     gene_intersector = GeneIntersector(gene_intersect_config)
     alignments = gene_intersector.find_gene_intersections(alignments)
     del gene_intersector
     print "Gene intersections extracted!\n"
 
-    print "STEP 5: Writing alignments to file...\n"
+    print "STEP 6: Writing alignments to file...\n"
     alignment_count = write_alignments(alignments, output)
     del alignments
     print "%i alignments written to %s." % (
