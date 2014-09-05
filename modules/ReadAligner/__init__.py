@@ -54,7 +54,8 @@ class RecordFormatter():
         alignment_record.ref = chromosome
 
         if strand == -1:
-            alignment_record.strand = "+"
+            alignment_record.strand = "-" if alignment_record.strand == "+" \
+                else "+"
             alignment_record.start_coord, alignment_record.end_coord = \
                 alignment_record.end_coord, alignment_record.start_coord
             alignment_record.seq = "".join(self.complement[base] for base in\
