@@ -23,10 +23,11 @@ def protein_coding_genes(gff3, output):
                 gff3_record.strand
             ))
 
-def extract_bed(annotations, output, record_type):
+def extract_bed(annotations, output, record_type,
+                record_source="Coding_transcript"):
     with open(output, "w") as output_handle:
         for record in GFF2.parse(open(annotations, "rU")):
-            if record.source != "Coding_transcript":
+            if record.source != record_source:
                 continue
 
             if record.type != record_type:

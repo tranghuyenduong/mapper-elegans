@@ -20,6 +20,11 @@ def wrapper():
     print "\nExtracting protein coding genes..."
     modules.protein_coding_genes(config.gff3_records, P("genes"))
 
+    # Extract transposons
+    print "\nExtracting transposons..."
+    modules.extract_bed(config.gff2_records, P("transposons.bed"),
+        "gene", "transposon_gene")
+
     # Extract primary transcripts
     print "\nExtracting primary transcripts..."
     modules.extract_bed(config.gff2_records, P("primary_transcripts.bed"),
