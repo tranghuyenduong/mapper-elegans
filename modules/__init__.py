@@ -33,13 +33,16 @@ def extract_bed(annotations, output, record_type,
             if record.type != record_type:
                 continue
 
-            transcript_id = re.search('(?<=Transcript ")[^"]*(?=")', record.attr).group(0)
+            ident = re.search(
+                r'Transcript|Gene \"(?P<ident>.+?)\"',
+                record.attr
+            ).group('ident')
 
             output_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
                 re.search("CHROMOSOME_(.*)", record.seqid).group(1),
                 record.start-1,
                 record.end,
-                transcript_id,
+                ident,
                 record.strand
             ))
 
