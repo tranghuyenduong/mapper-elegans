@@ -22,26 +22,36 @@ def wrapper():
 
     # Extract transposons
     print "\nExtracting transposons..."
-    modules.extract_bed(config.gff2_records, P("transposons.bed"),
-        "gene", "transposon_gene")
+    modules.extract_bed(config.gff2_records,
+                        P("transposons.bed"),
+                        "transposon_gene",
+                        "gene")
 
     # Extract primary transcripts
     print "\nExtracting primary transcripts..."
-    modules.extract_bed(config.gff2_records, P("primary_transcripts.bed"),
-        "protein_coding_primary_transcript")
+    modules.extract_bed(config.gff2_records,
+                        P("primary_transcripts.bed"),
+                        "Coding_transcript",
+                        "protein_coding_primary_transcript")
     modules.extract_sequences(config.genome, P("primary_transcripts.bed"),
         P("primary_transcripts.fa"))
 
     # Extract introns
     print "\nExtracting introns..."
-    modules.extract_bed(config.gff2_records, P("introns.bed"), "intron")
+    modules.extract_bed(config.gff2_records,
+                        P("introns.bed"),
+                        "Coding_transcript",
+                        "intron")
     modules.order_records(P("introns.bed"), P("introns_sorted.bed"))
     modules.extract_sequences(config.genome, P("introns_sorted.bed"),
         P("introns_sorted.fa"))
 
     # Extract coding exons
     print "\nExtracting exons..."
-    modules.extract_bed(config.gff2_records, P("exons.bed"), "exon")
+    modules.extract_bed(config.gff2_records,
+                        P("exons.bed"),
+                        "Coding_transcript",
+                        "exon")
 
     # Extract transcript parents
     print "\nExtracting transcript parents..."
