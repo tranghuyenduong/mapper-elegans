@@ -33,7 +33,7 @@ def extract_bed(annotations, output, record_source, record_type):
                 continue
 
             ident = re.search(
-                r'Transcript|Gene \"(?P<ident>.+?)\"',
+                r'[Transcript|Gene] \"(?P<ident>.+?)\"',
                 record.attr
             ).group('ident')
 
