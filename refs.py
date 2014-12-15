@@ -27,6 +27,20 @@ def wrapper():
                         "transposon_gene",
                         "gene")
 
+    # Extract tRNA transcripts
+    print "\nExtracting tRNA transcripts..."
+    modules.extract_bed(config.gff2_records,
+                        P("t_rna.bed"),
+                        "tRNA",
+                        "tRNA")
+
+    # Extract rRNA transcripts
+    print "\nExtracting rRNA transcripts..."
+    modules.extract_bed(config.gff2_records,
+                        P("r_rna.bed"),
+                        "rRNA",
+                        "rRNA")
+
     # Extract primary transcripts
     print "\nExtracting primary transcripts..."
     modules.extract_bed(config.gff2_records,
