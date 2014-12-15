@@ -50,5 +50,5 @@ class GeneIntersector():
         self._find_gene_intersections(gi_map)
         self._correct_read_counts(gi_map)
 
-        return set(a for a in gi_map)
+        return set(a for a in gi_map) \
             if self.config.annotate_only else set(a for a in gi_map if a.genes)
