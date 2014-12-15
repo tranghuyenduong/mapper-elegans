@@ -58,6 +58,7 @@ class PostprocessConfig():
 
 class GeneIntersectConfig():
 
+    annotate_only = True
     genes = P("refs/genes")
 
 
