@@ -35,11 +35,18 @@ def wrapper():
                         "snRNA")
 
     # Extract snoRNA
-    print "\nExtracting snoRNA transcripts..."
+    print "\nExtracting snoRNA..."
     modules.extract_bed(config.gff2_records,
                         P("sno_rna.bed"),
                         "snoRNA",
                         "snoRNA")
+
+    # Extract ncRNA
+    print "\nExtracting ncRNA..."
+    modules.extract_bed(config.gff2_records,
+                        P("nc_rna.bed"),
+                        "ncRNA",
+                        "ncRNA")
 
     # Extract tRNA transcripts
     print "\nExtracting tRNA transcripts..."
