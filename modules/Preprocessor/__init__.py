@@ -126,7 +126,10 @@ class Preprocessor():
 
         for record in SeqIO.parse(open(reads, "rU"), "fasta"):
             record_len = len(record.seq)
-            record_count = int(re.search("(?<=-)[\d]+", record.name).group(0))
+            record_count = int(re.search(
+                r".*-(\d+)$",
+                record.name
+                ).group(1))
             read_sizes[record_len] += record_count
 
         s = "Read Size Distribution:\n"
