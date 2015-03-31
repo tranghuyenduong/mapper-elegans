@@ -98,8 +98,9 @@ class Preprocessor():
 
             with open(output, "w") as output_handle:
                 for idx, (read, read_count) in enumerate(reads.iteritems()):
-                    output_handle.write(">%i-%i\n%s\n" % (
+                    output_handle.write(">%i-%i-%i\n%s\n" % (
                         idx,
+                        len(read),
                         read_count,
                         read
                     ))
