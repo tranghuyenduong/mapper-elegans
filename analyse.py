@@ -38,7 +38,7 @@ def main():
             rc.log_alignment(
                 sampleid,
                 gene,
-                int(chrom_start if strand == "-" else chrom_end),
+                int(chrom_start if strand == "+" else chrom_end),
                 int(score)
             )
 
