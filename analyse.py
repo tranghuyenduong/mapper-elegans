@@ -26,6 +26,9 @@ def main():
                 is_multi_mapped, gene, is_multi_gene, _, \
                 is_pirna_mirna_read = alignment.strip().split("\t")
 
+            if gene == '':
+                continue
+
             if config.exclude_multi_mapped and is_multi_mapped == "True":
                 continue
 
