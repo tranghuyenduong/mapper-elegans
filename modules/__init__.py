@@ -245,7 +245,7 @@ def is_existing_file(file_name):
     except IOError:
         return False
 
-def new_or_existing_tmp_dir(path):
+def new_or_existing_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 

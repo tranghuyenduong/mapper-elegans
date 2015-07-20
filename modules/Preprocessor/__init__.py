@@ -3,7 +3,7 @@ import subprocess
 
 from Bio import SeqIO
 from collections import defaultdict
-from modules import is_existing_file, new_or_existing_tmp_dir, base_file_name
+from modules import is_existing_file, new_or_existing_dir, base_file_name
 from os import path
 
 
@@ -11,7 +11,7 @@ class Preprocessor():
 
     def __init__(self, config):
         self.config = config
-        self.tmp = new_or_existing_tmp_dir(self.config.tmp_dir)
+        self.tmp = new_or_existing_dir(self.config.tmp_dir)
 
     def processed_reads(self, reads, barcode):
         trimmed = self._trim_barcode(reads)

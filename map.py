@@ -6,7 +6,7 @@ import time
 from glob import glob
 from subprocess import Popen
 
-from modules import write_alignments
+from modules import write_alignments, new_or_existing_dir
 from modules.Preprocessor import Preprocessor
 from modules.ReadAligner import ReadAligner
 from modules.Postprocessor import Postprocessor
@@ -82,7 +82,7 @@ def wrapper():
         root = re.search(".*/(.*)\.fastq", f).group(1).split("_")
         barcode = root[-1]
         output = "%s/%s_alignments.txt" % (
-            mapper_config.alignments_dir,
+            new_or_existing_dir(mapper_config.alignments_dir),
             "_".join(root[:3]))
 
         main(f, barcode, output, pre_process_config, bt_config,
