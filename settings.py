@@ -1,6 +1,6 @@
 from os import path
 
-BASE_DIR = "/home/sba/bioinf/noelle"
+BASE_DIR = "data"
 
 def P(pathname):
     return path.join(BASE_DIR, pathname)
