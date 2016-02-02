@@ -10,7 +10,7 @@ class RefsConfig():
     genome = P("ws240/c_elegans.PRJNA13758.WS240.genomic.fa")
     gff2_records = P("ws240/c_elegans.PRJNA13758.WS240.annotations.gff2")
     gff3_records = P("ws240/c_elegans.PRJNA13758.WS240.annotations.gff3")
-    gene_ids = P("ws240/c_elegans.PRJNA13758.WS240.geneIDs.txt")
+    gene_ids = P("ws240/annotation/c_elegans.PRJNA13758.WS240.geneIDs.txt")
     ref = P("refs")
 
 class MapperConfig():
