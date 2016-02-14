@@ -1,49 +1,159 @@
 import os
 import re
 import subprocess
+import settings
 
 from Bio import SeqIO
 from collections import defaultdict
 from formats import Bed, GFF2, GFF3, Wormbase
 
+def P(path):
+    return os.path.join(settings.RefsConfig.ref, path)
 
-def protein_coding_genes(gff3, output):
-    with open(output, "w") as output_handle:
-        for gff3_record in GFF3.parse(open(gff3, "rU")):
-            if gff3_record.source != "WormBase" or gff3_record.type != \
-                    "gene" or gff3_record.attr["biotype"].pop() != \
-                    "protein_coding":
-                continue
+def extract_gff2_data(gff2_filename):
 
-            output_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
+    # Inner method for writing records to disk that match the given source and type
+    def handle_record(gff2_record, record_source, record_type, output_handle):
+        if gff2_record.source != record_source or gff2_record.type != record_type:
+            return
+
+        ident = re.search(
+            r'[Transcript|Gene] \"(?P<ident>.+?)\"',
+            gff2_record.attr
+        ).group('ident')
+
+        output_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
+            re.search("CHROMOSOME_(.*)", gff2_record.seqid).group(1),
+            gff2_record.start-1,
+            gff2_record.end,
+            ident,
+            gff2_record.strand
+        ))
+
+    # Extract transposons
+    transposons_handle = open(P("transposons.bed"), "w")
+    def extract_transposons(gff2_record):
+        handle_record(gff2_record, "transposon_gene", "gene", transposons_handle)
+
+    # Extract snRNA
+    snRNA_handle = open(P("sn_rna.bed"), "w")
+    def extract_snRNA(gff2_record):
+        handle_record(gff2_record, "snRNA", "snRNA", snRNA_handle)
+
+    # Extract snoRNA
+    snoRNA_handle = open(P("sno_rna.bed"), "w")
+    def extract_snoRNA(gff2_record):
+        handle_record(gff2_record, "snoRNA", "snoRNA", snoRNA_handle)
+
+    # Extract ncRNA
+    ncRNA_handle = open(P("nc_rna.bed"), "w")
+    def extract_ncRNA(gff2_record):
+        handle_record(gff2_record, "ncRNA", "ncRNA", ncRNA_handle)
+
+    # Extract tRNA transcripts
+    tRNA_transcripts_handle = open(P("t_rna.bed"), "w")
+    def extract_tRNA_transcripts(gff2_record):
+        handle_record(gff2_record, "tRNA", "tRNA", tRNA_transcripts_handle)
+
+    # Extract rRNA transcripts
+    rRNA_transcripts_handle = open(P("r_rna.bed"), "w")
+    def extract_rRNA_transcripts(gff2_record):
+        handle_record(gff2_record, "rRNA", "rRNA", rRNA_transcripts_handle)
+
+    # Extract primary transcripts
+    primary_transcripts_handle = open(P("primary_transcripts.bed"), "w")
+    def extract_primary_transcripts(gff2_record):
+        handle_record(gff2_record, "Coding_transcript", "protein_coding_primary_transcript", primary_transcripts_handle)
+
+    # Extract introns
+    introns_handle = open(P("introns.bed"), "w")
+    def extract_introns(gff2_record):
+        handle_record(gff2_record, "Coding_transcript", "intron", introns_handle)
+
+    # Extract coding exons
+    coding_exons_handle = open(P("exons.bed"), "w")
+    def extract_coding_exons(gff2_record):
+        handle_record(gff2_record, "Coding_transcript", "exon", coding_exons_handle)
+
+    # Parse the file, handle each record
+    for gff2_record in GFF2.parse(open(gff2_filename, "rU")):
+        extract_transposons(gff2_record)
+        extract_snRNA(gff2_record)
+        extract_snoRNA(gff2_record)
+        extract_ncRNA(gff2_record)
+        extract_tRNA_transcripts(gff2_record)
+        extract_rRNA_transcripts(gff2_record)
+        extract_primary_transcripts(gff2_record)
+        extract_introns(gff2_record)
+        extract_coding_exons(gff2_record)
+
+def extract_gff3_data(gff3_filename):
+    record_handlers = ()
+
+    # Extract protein coding genes
+    protein_coding_genes_handle = open(P("genes"), "w")
+    def extract_protein_coding_gene(gff3_record):
+        if gff3_record.source != "WormBase" or gff3_record.type != "gene" or gff3_record.attr["biotype"].pop() != "protein_coding":
+            return
+
+        name = gff3_record.attr["Name"].pop() if gff3_record.attr["Name"] else ""
+
+        protein_coding_genes_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
+            gff3_record.seqid,
+            gff3_record.start-1,
+            gff3_record.end,
+            name,
+            gff3_record.strand
+        ))
+
+    # Extract transcript parents
+    transcript_parents_handle = open(P("transcript_parents"), "w")
+    def extract_transcript_parents(gff3_record):
+        if gff3_record.source != "WormBase" or gff3_record.type != "mRNA":
+            return
+
+        transcript = [val.split(":")[1] for val in gff3_record.attr["ID"] if val.startswith("Transcript:")].pop()
+        geneid = [val.split(":")[1] for val in gff3_record.attr["Parent"] if val.startswith("Gene:")].pop()
+        name = gff3_record.attr["Name"].pop() if gff3_record.attr["Name"] else ""
+
+        transcript_parents_handle.write("%s,%s,%s\n" % (
+            transcript,
+            name,
+            geneid
+        ))
+
+    # Extract piRNA and miRNA
+    pirna_mirna_records_handle = open(P("pirna_mirna"), "w")
+    def extract_pirna_mirna_records(gff3_record):
+        if gff3_record.source != "WormBase":
+            return
+
+        biotype = gff3_record.attr["biotype"].pop() if gff3_record.attr["biotype"] else ""
+        name = gff3_record.attr["Name"].pop() if gff3_record.attr["Name"] else ""
+
+        if gff3_record.type == "gene" and biotype == "piRNA":
+            pirna_mirna_records_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
                 gff3_record.seqid,
                 gff3_record.start-1,
                 gff3_record.end,
-                gff3_record.attr["Name"].pop(),
+                name,
                 gff3_record.strand
             ))
 
-def extract_bed(annotations, output, record_source, record_type):
-    with open(output, "w") as output_handle:
-        for record in GFF2.parse(open(annotations, "rU")):
-            if record.source != record_source:
-                continue
-
-            if record.type != record_type:
-                continue
-
-            ident = re.search(
-                r'[Transcript|Gene] \"(?P<ident>.+?)\"',
-                record.attr
-            ).group('ident')
-
-            output_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
-                re.search("CHROMOSOME_(.*)", record.seqid).group(1),
-                record.start-1,
-                record.end,
-                ident,
-                record.strand
+        elif gff3_record.type == "miRNA":
+            pirna_mirna_records_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
+                gff3_record.seqid,
+                gff3_record.start-5,
+                gff3_record.end+4,
+                name,
+                gff3_record.strand
             ))
+
+    # Parse the file, handle each record
+    for gff3_record in GFF3.parse(open(gff3_filename, "rU")):
+        extract_protein_coding_gene(gff3_record)
+        extract_transcript_parents(gff3_record)
+        extract_pirna_mirna_records(gff3_record)
 
 def order_records(bed_file, output):
     records = defaultdict(list)
@@ -73,46 +183,6 @@ def extract_sequences(genome, bed_file, output):
         ]
     )
     extract.wait()
-
-def transcript_parents(gff3, output):
-    with open(output, "w") as output_handle:
-        for gff3_record in GFF3.parse(open(gff3, "rU")):
-            if gff3_record.source != "WormBase" or gff3_record.type != "mRNA":
-                continue
-
-            transcript = [val.split(":")[1] for val in gff3_record.attr["ID"] if val.startswith("Transcript:")].pop()
-            geneid = [val.split(":")[1] for val in gff3_record.attr["Parent"] if val.startswith("Gene:")].pop()
-            name = gff3_record.attr["Name"].pop()
-
-            output_handle.write("%s,%s,%s\n" % (
-                transcript,
-                name,
-                geneid
-            ))
-
-def pirna_mirna_records(gff3, output):
-    with open(output, "w") as output_handle:
-        for gff3_record in GFF3.parse(open(gff3, "rU")):
-            if gff3_record.source != "WormBase":
-                continue
-
-            if gff3_record.type == "gene" and gff3_record.attr["biotype"].pop() == "piRNA":
-                output_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
-                    gff3_record.seqid,
-                    gff3_record.start-1,
-                    gff3_record.end,
-                    gff3_record.attr["Name"].pop(),
-                    gff3_record.strand
-                ))
-
-            elif gff3_record.type == "miRNA":
-                output_handle.write("%s\t%i\t%i\t%s\t.\t%s\n" % (
-                    gff3_record.seqid,
-                    gff3_record.start-5,
-                    gff3_record.end+4,
-                    gff3_record.attr["Name"].pop(),
-                    gff3_record.strand
-                ))
 
 def public_names(wormbase_records, output):
     with open(output, "w") as output_handle:
