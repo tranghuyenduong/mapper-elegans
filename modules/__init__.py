@@ -2,6 +2,7 @@ import os
 import re
 import subprocess
 import settings
+import sys
 
 from Bio import SeqIO
 from collections import defaultdict
@@ -261,24 +262,35 @@ def exon_coords(sorted_introns, parted_pri_transcripts, output):
         for pri_transcript in SeqIO.parse(open(parted_pri_transcripts, "rU"), "fasta"):
             pri_transcript_seq = str(pri_transcript.seq).strip().split(",")
 
-            coords = []
+            ranges = []
+            startRange = sys.maxsize
             pri_transcript_coord = 0
 
-            coords.append(pri_transcript_coord)
+            # Always capture range for first coordinate
+            ranges.append("0:0")
 
+            # Capture ranges for all other sequences
             for block in pri_transcript_seq:
                 for base in block:
                     pri_transcript_coord += 1
 
-                    if not introns[pri_transcript.name]:
-                        coords.append(pri_transcript_coord)
+                    if not introns[pri_transcript.name] or block not in introns[pri_transcript.name]:
+                        if startRange == sys.maxsize:
+                            startRange = pri_transcript_coord
+                    else:
+                        if startRange != sys.maxsize:
+                            endRange = pri_transcript_coord - 1
+                            ranges.append("%d:%d" % (startRange, endRange))
+                            startRange = sys.maxsize
 
-                    elif block not in introns[pri_transcript.name]:
-                        coords.append(pri_transcript_coord)
+            # Capture range that includes the last coordinate.
+            if startRange != sys.maxsize:
+                endRange = pri_transcript_coord - 1
+                ranges.append("%d:%d" % (startRange, endRange))
 
             output_handle.write("%s\t%s\n" % (
                 pri_transcript.name,
-                " ".join(map(str, coords))
+                " ".join(map(str, ranges))
             ))
 
 def build_bowtie_index(fasta, bt_index):

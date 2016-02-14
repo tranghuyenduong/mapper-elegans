@@ -36,9 +36,17 @@ class RecordFormatter():
 
     def _parse_exon_coords(self, exon_coords):
         for line in open(exon_coords, "rU").xreadlines():
-            transcript_id, coords = line.strip().split("\t")
-
-            self.exon_coords[transcript_id] = map(int, coords.split())
+            transcript_id, rangeListString = line.strip().split("\t")
+            
+            coords = []
+            rangeList = rangeListString.split(" ")
+            for rangeString in rangeList:
+                rangeObject = rangeString.split(":")
+                start = int(rangeObject[0])
+                end = int(rangeObject[1])
+                for i in range(start, end + 1):
+                    coords.append(i)
+            self.exon_coords[transcript_id] = coords
 
     def format_record(self, alignment_record, coding_transcript):
         if not coding_transcript:
