@@ -1,7 +1,7 @@
 import modules
 import os
 import settings
-
+import time
 
 def wrapper():
     config = settings.RefsConfig
@@ -133,4 +133,8 @@ def wrapper():
 
 
 if __name__ == "__main__":
+    start_time = time.time()
+
     wrapper()
+
+    print "Script completed in %i seconds." % (time.time() - start_time)
