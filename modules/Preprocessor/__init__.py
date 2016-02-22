@@ -1,6 +1,10 @@
 import re
+import os
 import subprocess
+import multiprocessing
+import time
 
+from multiprocessing import Process
 from Bio import SeqIO
 from collections import defaultdict
 from modules import is_existing_file, new_or_existing_dir, base_file_name
@@ -48,32 +52,129 @@ class Preprocessor():
         return output
 
     def _clip_adapter(self, input, barcode):
-        print "Clipping adapter sequences..."
+        start_time = time.time()
 
-        output = path.join(self.tmp, base_file_name(input) + "_clipped.fq")
+        output = path.join(self.tmp, base_file_name(input) + "_clipped.fastq")
 
         if self.config.force_preprocess or not is_existing_file(output):
-            clip_seq = subprocess.Popen(
-                [
-                    "fastx_clipper",
-                    "-a",
-                    self.config.template % barcode,
-                    "-c",
-                    "-M",
-                    str(self.config.min_overlap),
-                    "-l",
-                    str(self.config.min_seq_len),
-                    "-v",
-                    "-Q33",
-                    "-i",
-                    input,
-                    "-o",
-                    output
-                ]
-            )
-            clip_seq.wait()
+            # Problem: fastx_clipper is not multithreaded and SUPER slow on large fastq files.
+            # Solution: break up fastq file into smaller chunks, process each chunk on a separate core.
 
-        print "Adapters clipped!\n"
+            def fastx_clipper(chunk_input, chunk_output):
+                clip_seq = subprocess.Popen(
+                    [
+                        "fastx_clipper",
+                        "-a",
+                        self.config.template % barcode,
+                        "-c",
+                        "-M",
+                        str(self.config.min_overlap),
+                        "-l",
+                        str(self.config.min_seq_len),
+                        "-v",
+                        "-Q33",
+                        "-i",
+                        chunk_input,
+                        "-o",
+                        chunk_output
+                    ]
+                )
+                clip_seq.wait()
+
+                # Clean up
+                os.remove(chunk_input)
+
+            # Figure out chunk size for each core to handle
+            LINES_PER_RECORD = 4
+            number_of_lines = sum(1 for line in open(input))
+            number_of_records = number_of_lines / LINES_PER_RECORD
+            number_of_cores = multiprocessing.cpu_count()
+            number_of_records_per_core = number_of_records / number_of_cores
+
+            print "Clipping adapter sequences across {0} cores...\n".format(number_of_cores)
+
+            # Prepare for multicore processing
+            processes = []
+            chunk_output_paths = []
+
+            # Break up fastq into smaller chunks
+            chunk_index = 0
+            chunk_input_handle = None
+            with open(input) as input_handle:
+                for index, line in enumerate(input_handle):
+                    # Lazy create chunked fastq file
+                    if chunk_input_handle is None:
+                        chunk_input_path = path.join(self.tmp, base_file_name(input) + "_{0}_chunk.fastq".format(chunk_index))
+                        chunk_input_handle = open(chunk_input_path, "w")
+
+                    # Write line to chunk file to be processed later
+                    chunk_input_handle.write(line)
+
+                    # If this is the last line of the last record for a chunk, start processing the file.
+                    record_index = index / LINES_PER_RECORD
+                    is_last_line_in_record = (index + 1) % LINES_PER_RECORD == 0
+                    is_last_record_in_chunk = (record_index + 1) % number_of_records_per_core == 0
+                    is_last_chunk = chunk_index == number_of_cores - 1
+                    if is_last_line_in_record and is_last_record_in_chunk and not is_last_chunk:
+                        print "Starting fastx_clipper on core {0}".format(chunk_index + 1)
+
+                        # Finish writing the chunk
+                        chunk_input_handle.close()
+
+                        # Figure out where to put the output file
+                        chunk_output_path = path.join(self.tmp, base_file_name(input) + "_{0}_clipped.fastq".format(chunk_index))
+                        chunk_output_paths.append(chunk_output_path)
+
+                        # Kick off fastx_clipping
+                        process = Process(target=fastx_clipper, args=(chunk_input_path, chunk_output_path))
+                        process.start()
+                        processes.append(process)
+
+                        # Reset state for the next chunk
+                        chunk_input_handle = None
+                        chunk_index += 1
+
+            if chunk_input_handle is not None:
+                print "Starting fastx_clipper on core {0}".format(chunk_index + 1)
+
+                # Finish writing the chunk
+                chunk_input_handle.close()
+
+                # Figure out where to put the output file
+                chunk_output_path = path.join(self.tmp, base_file_name(input) + "_{0}_clipped.fastq".format(chunk_index))
+                chunk_output_paths.append(chunk_output_path)
+
+                # Kick off processing
+                process = Process(target=fastx_clipper, args=(chunk_input_path, chunk_output_path))
+                process.start()
+                processes.append(process)
+
+            print "\nWaiting for {0} processes to finish, this could take a while...\n".format(number_of_cores)
+
+            # Wait for all processes to finish
+            for process in processes:
+                process.join()
+
+            print "Clipping complete, combining results into a single output file...\n"
+
+            # Build back up a single combined output file
+            combined_output_handle = open(output, "w")
+            for chunk_output_path in chunk_output_paths:
+                with open(chunk_output_path) as chunk_output_handle:
+                    for line in chunk_output_handle:
+                        combined_output_handle.write(line)
+
+                # Clean up
+                os.remove(chunk_output_path)
+
+            # And we're done
+            combined_output_handle.close()
+
+            elapsed_seconds = (time.time() - start_time)
+            print "Adapters clipped in {0:.0f} seconds\n".format(elapsed_seconds)
+        else:
+            print "Using previously-clipped adapter sequence at {0}\n".format(output)
+
         return output
 
     def _collapse_reads(self, input):
