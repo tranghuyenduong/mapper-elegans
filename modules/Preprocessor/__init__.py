@@ -1,5 +1,6 @@
 import re
 import subprocess
+import time
 
 from Bio import SeqIO
 from collections import defaultdict
@@ -48,6 +49,7 @@ class Preprocessor():
         return output
 
     def _clip_adapter(self, input, barcode):
+        start_time = time.time()
         print "Clipping adapter sequences..."
 
         output = path.join(self.tmp, base_file_name(input) + "_clipped.fq")
@@ -73,7 +75,8 @@ class Preprocessor():
             )
             clip_seq.wait()
 
-        print "Adapters clipped!\n"
+        elapsed_seconds = (time.time() - start_time)
+        print "Adapters clipped in {0:.0f} seconds\n".format(elapsed_seconds)
         return output
 
     def _collapse_reads(self, input):
