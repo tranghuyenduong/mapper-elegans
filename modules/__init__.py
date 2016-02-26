@@ -263,11 +263,11 @@ def exon_coords(sorted_introns, parted_pri_transcripts, output):
             pri_transcript_seq = str(pri_transcript.seq).strip().split(",")
 
             ranges = []
-            startRange = sys.maxsize
+            start_index = sys.maxsize
             pri_transcript_coord = 0
 
             # Always capture range for first coordinate
-            ranges.append("0:0")
+            ranges.append("0:1")
 
             # Capture ranges for all other sequences
             for block in pri_transcript_seq:
@@ -275,18 +275,21 @@ def exon_coords(sorted_introns, parted_pri_transcripts, output):
                     pri_transcript_coord += 1
 
                     if not introns[pri_transcript.name] or block not in introns[pri_transcript.name]:
-                        if startRange == sys.maxsize:
-                            startRange = pri_transcript_coord
+                        # Start a new range
+                        if start_index == sys.maxsize:
+                            start_index = pri_transcript_coord
                     else:
-                        if startRange != sys.maxsize:
-                            endRange = pri_transcript_coord - 1
-                            ranges.append("%d:%d" % (startRange, endRange))
-                            startRange = sys.maxsize
+                        # Finish an existing range
+                        if start_index != sys.maxsize:
+                            length = pri_transcript_coord - start_index
+                            ranges.append("%d:%d" % (start_index, length))
+                            start_index = sys.maxsize
 
             # Capture range that includes the last coordinate.
-            if startRange != sys.maxsize:
-                endRange = pri_transcript_coord - 1
-                ranges.append("%d:%d" % (startRange, endRange))
+            if start_index != sys.maxsize:
+                # Bump up coord by 1 so the last pri_transcript_coord is included in the range
+                length = pri_transcript_coord - start_index + 1
+                ranges.append("%d:%d" % (start_index, length))
 
             output_handle.write("%s\t%s\n" % (
                 pri_transcript.name,
