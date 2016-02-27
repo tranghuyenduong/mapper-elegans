@@ -36,16 +36,16 @@ class RecordFormatter():
 
     def _parse_exon_coords(self, exon_coords):
         for line in open(exon_coords, "rU").xreadlines():
-            transcript_id, rangeListString = line.strip().split("\t")
+            transcript_id, range_list_string = line.strip().split("\t")
             
             coords = []
-            rangeList = rangeListString.split(" ")
-            for rangeString in rangeList:
-                rangeObject = rangeString.split(":")
-                start = int(rangeObject[0])
-                end = int(rangeObject[1])
-                for i in range(start, end + 1):
-                    coords.append(i)
+            range_list = range_list_string.split(" ")
+            for range_string in range_list:
+                range_array = range_string.split(":")
+                start_index = int(range_array[0])
+                length = int(range_array[1])
+                for pri_coord in range(start_index, start_index + length):
+                    coords.append(pri_coord)
             self.exon_coords[transcript_id] = coords
 
     def format_record(self, alignment_record, coding_transcript):
