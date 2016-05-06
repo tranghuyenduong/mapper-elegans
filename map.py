@@ -30,13 +30,19 @@ def main(reads, barcode, output, pre_process_config, bt_config,
         bt_config,
         processed_reads
     )
+
+    #genome_dump = open("bowtie_genome","w");
+    #coding_dump = open("bowtie_coding","w");
+
     print "Aligning to genome...\n"
     for alignment in read_aligner.align_to(bt_config.genome_ref):
+        #genome_dump.write(alignment.summary)
         genome.add(alignment)
 
     print "Aligning to coding transcripts...\n"
     for alignment in read_aligner.align_to(bt_config.coding_transcripts_ref,
                                            True):
+        #coding_dump.write(alignment.summary)
         cds.add(alignment)
     del read_aligner
     print "Bowtie alignment records generated and formatted!\n"
@@ -45,12 +51,26 @@ def main(reads, barcode, output, pre_process_config, bt_config,
     source_finder = SourceFinder(sf_config)
     source_finder.classify_all_alignments(genome, cds)
     alignments = source_finder.all_alignments
-    del source_finder
+
+    classify_all = open("classify_all","w")
+    for a in alignments:
+        classify_all.write(a.summary)
+
+    classify_intron_exon = open("classify_intron_exon", "w")
+    for a in source_finder.intron_exon_alignments:
+        classify_intron_exon.write(a.summary)
+
+    #del source_finder
     print "Classification complete!\n"
 
     print "STEP 4: Post-processing alignments...\n"
     post_processor = Postprocessor(post_process_config)
     alignments = post_processor.process_alignments(alignments)
+
+    postprocessor_result = open("postprocess_result","w")
+    for a in alignments:
+        postprocessor_result.write(a.summary)
+
     del post_processor
     print "Post-processing complete!\n"
 
@@ -67,6 +87,28 @@ def main(reads, barcode, output, pre_process_config, bt_config,
         alignment_count,
         output
     )
+
+    alignment_count = write_alignments(source_finder.intron_exon_alignments, "final_intron_exon_alignments.txt")
+    print "%i alignments written to %s." % (
+        alignment_count,
+        "final_intron_exon"
+    )
+    alignment_count = write_alignments(source_finder.intron_or_intergenic_alignments, "final_intron_inter_alignments.txt")
+    print "%i alignments written to %s." % (
+        alignment_count,
+        "final_intron_inter"
+    )
+    alignment_count = write_alignments(source_finder.exon_exon_alignments, "final_exon_exon_alignments.txt")
+    print "%i alignments written to %s." % (
+        alignment_count,
+        "final_exon_exon"
+    )
+    alignment_count = write_alignments(source_finder.exon_alignments, "final_exon_alignments.txt")
+    print "%i alignments written to %s." % (
+        alignment_count,
+        "final_exon"
+    )
+
 
 def wrapper():
     mapper_config = settings.MapperConfig

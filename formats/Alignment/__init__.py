@@ -3,13 +3,15 @@ from formats.Bed import BedRecord
 
 class AlignmentRecord(BedRecord):
 
-    def __init__(self, chrom, chrom_start, chrom_end, name, score, strand):
+    def __init__(self, chrom, chrom_start, chrom_end, name, score, strand, original_seq, bt_record):
         BedRecord.__init__(self, chrom, chrom_start, chrom_end, name, score,
             strand)
 
         self.mapped_loci = 0
         self.pirnas_mirnas = []
         self.genes = []
+        self.original_seq = original_seq 
+        self.bt_record = bt_record
 
         # Populated by the SourceFinder module
         self.source = None
@@ -60,3 +62,9 @@ class AlignmentRecord(BedRecord):
             self._is_multi_gene,
             ",".join(self.pirnas_mirnas),
             self._is_pirna_mirna_read)
+
+
+
+
+
+

@@ -44,19 +44,25 @@ class SourceFinder(object):
 
     def _classify_intron_exon_alignments(self):
         iiie = self._intron_or_intergenic_or_intron_exon_alignments
+        
+        # Create a dictionary out of the set iiie
         temp = {a: a for a in iiie}
 
+        bedtools_call = [
+            "bedtools",
+            "intersect",
+            "-wo",
+            "-S",
+            "-a",
+            "stdin",
+            "-b",
+            self.config.exons
+        ]
+        print "Running bedtools with the following call:"
+        print bedtools_call
+
         intersect = subprocess.Popen(
-            [
-                "bedtools",
-                "intersect",
-                "-wo",
-                "-S",
-                "-a",
-                "stdin",
-                "-b",
-                self.config.exons
-            ],
+            bedtools_call,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
@@ -66,6 +72,9 @@ class SourceFinder(object):
         for result in intersect.communicate(input=stdin)[0].splitlines():
             ir = IntersectionRecord(*result.strip().split())
 
+            # Pulls out a matching AlignmentRecord from temp dictionary
+            # Remember temp dictionary is created from iiie, which is a 
+            # set of alignents that are not coding (i.e. iiie = genome - coding)
             match = temp[(
                 ir.q_chrom,
                 ir.q_chrom_start,

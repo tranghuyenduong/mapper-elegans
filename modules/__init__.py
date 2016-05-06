@@ -315,11 +315,21 @@ def write_alignments(records, output):
 
     all_alignments = sorted(records, key=lambda s: (s.chrom, s.chrom_start))
 
+    # Intron-only output
+    intron_output = output.replace("_alignments.txt", "_alignments_introns.txt")
+    intron_output_handle = open(intron_output, "w")
+
     write_count = 0
     with open(output, "w") as output_handle:
         for alignment in all_alignments:
-            output_handle.write(alignment.summary)
+            output_handle.write(alignment.bt_record.summary)
             write_count += 1
+
+            # Write ONLY introns to this file
+            if alignment.source == "Intron" or alignment.source == "Intron-Exon":
+                intron_output_handle.write(alignment.bt_record.summary)
+
+    intron_output_handle.close()
 
     return write_count
 

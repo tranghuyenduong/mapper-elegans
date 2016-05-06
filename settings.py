@@ -7,10 +7,10 @@ def P(pathname):
 
 class RefsConfig():
 
-    genome = P("ws240/c_elegans.PRJNA13758.WS240.genomic.fa")
-    gff2_records = P("ws240/c_elegans.PRJNA13758.WS240.annotations.gff2")
-    gff3_records = P("ws240/c_elegans.PRJNA13758.WS240.annotations.gff3")
-    gene_ids = P("ws240/annotation/c_elegans.PRJNA13758.WS240.geneIDs.txt")
+    genome = P("ws253/c_elegans.PRJNA13758.WS253.genomic.fa")
+    gff2_records = P("ws253/c_elegans.PRJNA13758.WS253.annotations.gff2")
+    gff3_records = P("ws253/c_elegans.PRJNA13758.WS253.annotations.gff3")
+    gene_ids = P("ws253/annotation/c_elegans.PRJNA13758.WS253.geneIDs.txt")
     ref = P("refs")
 
 class MapperConfig():
@@ -71,3 +71,4 @@ class AnalysisConfig():
     exclude_multi_gene = True
     alignments_dir = P("alignments")
     output_file = P("data_400.csv")
+    output_bam = P("data_400.bam")

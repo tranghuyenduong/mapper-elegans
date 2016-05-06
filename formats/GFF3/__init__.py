@@ -28,11 +28,17 @@ class GFF3Record():
         return self.string
 
     def _parse_attr(self, attributes):
-        for attr in attributes.split(";"):
-            tag, values = attr.split("=")
+        try:
+            for attr in attributes.split(";"):
+                charIndex = attr.index("=")
+                tag = attr[0:charIndex]
+                values = attr[charIndex+1:]
+                #tag, values = attr.split("=")
 
-            for value in values.split(","):
-                self.attr[tag].append(value)
+                for value in values.split(","):
+                    self.attr[tag].append(value)
+        except ValueError:
+            print "This attribute could not be parsed: %s" % attributes
 
 
 def parse(handle):
