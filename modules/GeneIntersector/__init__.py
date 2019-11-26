@@ -9,19 +9,26 @@ class GeneIntersector():
         self.config = config
 
     def _find_gene_intersections(self, gi_map):
+
+        # Setup call to bedtools
+        bedtools_call = [
+            "bedtools",
+            "intersect",
+            "-wo",
+            "-f",
+            "1.0",
+            "-S",
+            "-a",
+            "stdin",
+            "-b",
+            self.config.genes
+        ]
+        print "Calling Bedtools with the following"
+        print bedtools_call
+
+        # Makes call to bedtools
         intersect = subprocess.Popen(
-            [
-                "bedtools",
-                "intersect",
-                "-wo",
-                "-f",
-                "1.0",
-                "-S",
-                "-a",
-                "stdin",
-                "-b",
-                self.config.genes
-            ],
+            bedtools_call,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
@@ -50,5 +57,5 @@ class GeneIntersector():
         self._find_gene_intersections(gi_map)
         self._correct_read_counts(gi_map)
 
-        return set(a for a in gi_map) \
-            if self.config.annotate_only else set(a for a in gi_map if a.genes)
+        return set(a for a in gi_map) if self.config.annotate_only \
+                else set(a for a in gi_map if a.genes)
