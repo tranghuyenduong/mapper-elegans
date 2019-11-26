@@ -13,7 +13,13 @@ def main():
     rc = ReadCounter(config.genes, config.bin_size)
 
     for f in listdir(config.alignments_dir):
-        sampleid = f.strip("_alignments.txt")
+        # Bail if it's not an alignment file.
+        # This guards against processing .DS_STORE files
+        ALIGNMENTS_SUFFIX = "_alignments.txt"
+        if not f.endswith(ALIGNMENTS_SUFFIX):
+            continue
+
+        sampleid = f.strip(ALIGNMENTS_SUFFIX)
 
         print "\nCounting reads for sample %s..." % sampleid
 
@@ -53,6 +59,7 @@ def main():
     print "\nWriting read counts table to %s..." % config.output_file
 
     rc.write_counter(config.output_file)
+    rc.write_bam(config.output_bam)
 
 
 if __name__ == "__main__":
