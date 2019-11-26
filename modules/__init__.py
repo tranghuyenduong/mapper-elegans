@@ -169,19 +169,24 @@ def order_records(bed_file, output):
             output_handle.writelines(("%s\n" % str(bed_record)) for bed_record in bed_records)
 
 def extract_sequences(genome, bed_file, output):
+
+    bedtools_call = [
+        "bedtools",
+        "getfasta",
+        "-name",
+        "-s",
+        "-fi",
+        genome,
+        "-bed",
+        bed_file,
+        "-fo",
+        output
+    ]
+    print "Running bedtools with the following:"
+    print bedtools_call
+
     extract = subprocess.Popen(
-        [
-            "bedtools",
-            "getfasta",
-            "-name",
-            "-s",
-            "-fi",
-            genome,
-            "-bed",
-            bed_file,
-            "-fo",
-            output
-        ]
+        bedtools_call
     )
     extract.wait()
 
@@ -315,11 +320,22 @@ def write_alignments(records, output):
 
     all_alignments = sorted(records, key=lambda s: (s.chrom, s.chrom_start))
 
+    # Intron-only output
+    #intron_output = output.replace("_alignments.txt", "_alignments_introns.txt")
+    #intron_output_handle = open(intron_output, "w")
+
     write_count = 0
     with open(output, "w") as output_handle:
         for alignment in all_alignments:
+            
+            # output_handle.write(alignment.bt_record.summary)
             output_handle.write(alignment.summary)
             write_count += 1
+
+            # Write ONLY introns to this file
+            #if alignment.source == "Intron" or alignment.source == "Intron-Exon":
+                # intron_output_handle.write(alignment.bt_record.summary)
+                #intron_output_handle.write(alignment.summary)
 
     return write_count
 

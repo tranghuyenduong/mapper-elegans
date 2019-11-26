@@ -18,11 +18,10 @@ class Preprocessor():
         self.tmp = new_or_existing_dir(self.config.tmp_dir)
 
     def processed_reads(self, reads, barcode):
+
         trimmed = self._trim_barcode(reads)
         clipped = self._clip_adapter(trimmed, barcode)
         collapsed = self._collapse_reads(clipped)
-
-        print self._read_size_dist(collapsed)
         return collapsed
 
     def _trim_barcode(self, input):
@@ -34,9 +33,10 @@ class Preprocessor():
         output = path.join(self.tmp, base_file_name(input) + "_trimmed.fq")
 
         if self.config.force_preprocess or not is_existing_file(output):
-            trim_seq = subprocess.Popen(
-                [
+
+            trim_seq_cmd = [
                     "fastx_trimmer",
+                    # first base pair to keep, the 5th in this case
                     "-f",
                     str(self.config.barcode_len + 1),
                     "-Q33",
@@ -45,7 +45,11 @@ class Preprocessor():
                     "-o",
                     output
                 ]
-            )
+
+            print "Trimming with the following parameters."
+            print "%% %s" % (' '.join(str(p) for p in trim_seq_cmd))
+
+            trim_seq = subprocess.Popen(trim_seq_cmd)
             trim_seq.wait()
 
         print "Barcodes trimmed...\n"
@@ -59,16 +63,21 @@ class Preprocessor():
         if self.config.force_preprocess or not is_existing_file(output):
             # Problem: fastx_clipper is not multithreaded and SUPER slow on large fastq files.
             # Solution: break up fastq file into smaller chunks, process each chunk on a separate core.
-
+            print "===== BARCODE={0} TEMPLATE={1}\n".format(barcode, self.config.template)
             def fastx_clipper(chunk_input, chunk_output):
-                clip_seq = subprocess.Popen(
-                    [
+                clip_seq_cmd = [
                         "fastx_clipper",
                         "-a",
-                        self.config.template % barcode,
+                        #clip off the adapter sequence (or linker sequence)
+                        self.config.template,
+                        #Sanjeev's set up for sarah's data
+                        #self.config.template % barcode,
+                        # discard reads without adaptor (comment out only if the reads are clipped)
                         "-c",
+                        # discard reads have less than min_overlap
                         "-M",
                         str(self.config.min_overlap),
+                        # discard reads less than min_seq_len
                         "-l",
                         str(self.config.min_seq_len),
                         "-v",
@@ -78,7 +87,10 @@ class Preprocessor():
                         "-o",
                         chunk_output
                     ]
-                )
+                print "Clipping with the following parameters."
+                print "%% %s" % (' '.join(str(p) for p in clip_seq_cmd))
+
+                clip_seq = subprocess.Popen(clip_seq_cmd)
                 clip_seq.wait()
 
                 # Clean up
@@ -175,9 +187,6 @@ class Preprocessor():
         else:
             print "Using previously-clipped adapter sequence at {0}\n".format(output)
 
-        elapsed_seconds = (time.time() - start_time)
-        print "Adapters clipped in {0:.0f} seconds\n".format(elapsed_seconds)
-
         return output
 
     def _collapse_reads(self, input):
@@ -223,6 +232,9 @@ class Preprocessor():
                 too_long_reads
             )
 
+            #print self._read_size_dist(collapsed)
+            print "self._read_size_dist(collapsed)"
+            
         print "Reads collapsed!\n"
         return output
 
