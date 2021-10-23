@@ -10,6 +10,44 @@ from collections import defaultdict
 from modules import is_existing_file, new_or_existing_dir, base_file_name
 from os import path
 
+# Specific to M1 apple
+# PULLING FUNCTION TO TOP LEVEL TO AVOID PICKLING ERROR when running map.py and multiprocessing code starts
+# Error we were seeing: AttributeError: Can't pickle local object 'Preprocessor._clip_adapter.<locals>.fastx_clipper'
+# 
+
+# Problem: fastx_clipper is not multithreaded and SUPER slow on large fastq files.
+# Solution: break up fastq file into smaller chunks, process each chunk on a separate core.
+def fastx_clipper(chunk_input, chunk_output, template, min_overlap, min_seq_len):
+    clip_seq_cmd = [
+            "fastx_clipper",
+            "-a",
+            #clip off the adapter sequence (or linker sequence)
+            template,
+            #Sanjeev's set up for sarah's data
+            #self.config.template % barcode,
+            # discard reads without adaptor (comment out only if the reads are clipped)
+            "-c",
+            # discard reads have less than min_overlap
+            "-M",
+            str(min_overlap),
+            # discard reads less than min_seq_len
+            "-l",
+            str(min_seq_len),
+            "-v",
+            "-Q33",
+            "-i",
+            chunk_input,
+            "-o",
+            chunk_output
+        ]
+    print("Clipping with the following parameters.")
+    print("%% %s" % (' '.join(str(p) for p in clip_seq_cmd)))
+
+    clip_seq = subprocess.Popen(clip_seq_cmd)
+    clip_seq.wait()
+
+    # Clean up
+    os.remove(chunk_input)
 
 class Preprocessor():
 
@@ -61,40 +99,7 @@ class Preprocessor():
         output = path.join(self.tmp, base_file_name(input) + "_clipped.fq")
 
         if self.config.force_preprocess or not is_existing_file(output):
-            # Problem: fastx_clipper is not multithreaded and SUPER slow on large fastq files.
-            # Solution: break up fastq file into smaller chunks, process each chunk on a separate core.
-            print "===== BARCODE={0} TEMPLATE={1}\n".format(barcode, self.config.template)
-            def fastx_clipper(chunk_input, chunk_output):
-                clip_seq_cmd = [
-                        "fastx_clipper",
-                        "-a",
-                        #clip off the adapter sequence (or linker sequence)
-                        self.config.template,
-                        #Sanjeev's set up for sarah's data
-                        #self.config.template % barcode,
-                        # discard reads without adaptor (comment out only if the reads are clipped)
-                        "-c",
-                        # discard reads have less than min_overlap
-                        "-M",
-                        str(self.config.min_overlap),
-                        # discard reads less than min_seq_len
-                        "-l",
-                        str(self.config.min_seq_len),
-                        "-v",
-                        "-Q33",
-                        "-i",
-                        chunk_input,
-                        "-o",
-                        chunk_output
-                    ]
-                print "Clipping with the following parameters."
-                print "%% %s" % (' '.join(str(p) for p in clip_seq_cmd))
-
-                clip_seq = subprocess.Popen(clip_seq_cmd)
-                clip_seq.wait()
-
-                # Clean up
-                os.remove(chunk_input)
+            print("===== BARCODE={0} TEMPLATE={1}\n".format(barcode, self.config.template))
 
             # Figure out chunk size for each core to handle
             LINES_PER_RECORD = 4
@@ -138,7 +143,7 @@ class Preprocessor():
                         chunk_output_paths.append(chunk_output_path)
 
                         # Kick off fastx_clipping
-                        process = Process(target=fastx_clipper, args=(chunk_input_path, chunk_output_path))
+                        process = Process(target=fastx_clipper, args=(chunk_input_path, chunk_output_path, self.config.template, self.config.min_overlap, self.config.min_seq_len))
                         process.start()
                         processes.append(process)
 
@@ -157,6 +162,7 @@ class Preprocessor():
                 chunk_output_paths.append(chunk_output_path)
 
                 # Kick off processing
+                print("FASTX CLIPPER: input={0} output={1}".format(chunk_input_path, chunk_output_path))
                 process = Process(target=fastx_clipper, args=(chunk_input_path, chunk_output_path, self.config.template, self.config.min_overlap, self.config.min_seq_len))
                 process.start()
                 processes.append(process)
