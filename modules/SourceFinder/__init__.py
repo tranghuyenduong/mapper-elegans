@@ -18,7 +18,7 @@ class SourceFinder(object):
         self.exon_alignments = set()
 
     def classify_all_alignments(self, genome_alignments, cds_alignments):
-        print "Classifying alignments..."
+        print("Classifying alignments...")
 
         self.genome_alignments = genome_alignments
         self.cds_alignments = cds_alignments
@@ -58,8 +58,8 @@ class SourceFinder(object):
             "-b",
             self.config.exons
         ]
-        print "Running bedtools with the following call:"
-        print bedtools_call
+        print("Running bedtools with the following call:")
+        print(bedtools_call)
 
         intersect = subprocess.Popen(
             bedtools_call,
@@ -69,8 +69,16 @@ class SourceFinder(object):
         )
 
         stdin = "\n".join(str(a) for a in temp)
+
+        # convert to bytes to make python 3 happy
+        stdin = str.encode(stdin)
+
         for result in intersect.communicate(input=stdin)[0].splitlines():
-            ir = IntersectionRecord(*result.strip().split())
+            # original
+            # ir = IntersectionRecord(*result.strip().split())
+            
+            # convert back to string to make python 3 happy when defining match dictionary
+            ir = IntersectionRecord(*result.strip().decode("utf-8").split())
 
             # Pulls out a matching AlignmentRecord from temp dictionary
             # Remember temp dictionary is created from iiie, which is a 

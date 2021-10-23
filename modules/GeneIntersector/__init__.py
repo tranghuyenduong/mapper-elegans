@@ -23,8 +23,8 @@ class GeneIntersector():
             "-b",
             self.config.genes
         ]
-        print "Calling Bedtools with the following"
-        print bedtools_call
+        print("Calling Bedtools with the following")
+        print(bedtools_call)
 
         # Makes call to bedtools
         intersect = subprocess.Popen(
@@ -33,10 +33,17 @@ class GeneIntersector():
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-
+        
         stdin = "\n".join(str(a) for a in gi_map)
+        # Trang's note: need to change this to make python3 happy
+        stdin = str.encode(stdin)
         for result in intersect.communicate(input=stdin)[0].splitlines():
-            ir = IntersectionRecord(*result.strip().split())
+            # Trang's note:
+            # original
+            # ir = IntersectionRecord(*result.strip().split())
+            
+            # convert back to string to make python 3 happy when defining match dictionary
+            ir = IntersectionRecord(*result.strip().decode("utf-8").split())
 
             gi_map[(
                 ir.q_chrom,
@@ -51,7 +58,7 @@ class GeneIntersector():
                 a.score = a.score / len(a.genes)
 
     def find_gene_intersections(self, alignments):
-        print "Extracting gene intersections..."
+        print("Extracting gene intersections...")
 
         gi_map = {a: a.genes for a in alignments}
         self._find_gene_intersections(gi_map)

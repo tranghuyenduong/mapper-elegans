@@ -34,8 +34,8 @@ class Postprocessor():
             self.config.pirna_mirna_records
         ]
         #pirna_mirna_records = p("refs/pirna_mirna") in settings.py
-        print "Calling Bedtools with the following"
-        print bedtools_call
+        print("Calling Bedtools with the following")
+        print(bedtools_call)
 
         intersect = subprocess.Popen(
             bedtools_call,
@@ -46,9 +46,18 @@ class Postprocessor():
 
         records_encountered = 0
         records_saved = 0
+
         stdin = "\n".join(str(i) for i in pp_map)
+        
+        # convert to bytes to make python 3 happy
+        stdin = str.encode(stdin)
+        
         for result in intersect.communicate(input=stdin)[0].splitlines():
-            ir = IntersectionRecord(*result.strip().split())
+            # original
+            # ir = IntersectionRecord(*result.strip().split())
+            
+            # convert back to string to make python 3 happy when defining match dictionary
+            ir = IntersectionRecord(*result.strip().decode("utf-8").split())
 
             records_encountered += 1
             if ir.s_name != ".":
@@ -60,10 +69,10 @@ class Postprocessor():
                 )].append(ir.s_name)
                 records_saved += 1
 
-        print "Saved %d of %d records" % (records_saved, records_encountered)
+        print("Saved %d of %d records" % (records_saved, records_encountered))
 
     def process_alignments(self, alignments):
-        print "Post-Processing alignments..."
+        print("Post-Processing alignments...")
 
         pp_map = {a: a.pirnas_mirnas for a in alignments}
 

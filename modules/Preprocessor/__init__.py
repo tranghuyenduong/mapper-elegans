@@ -28,7 +28,7 @@ class Preprocessor():
         if not self.config.trim_barcode:
             return input
 
-        print "Trimming barcodes from 5\' end..."
+        print("Trimming barcodes from 5\' end...")
 
         output = path.join(self.tmp, base_file_name(input) + "_trimmed.fq")
 
@@ -46,13 +46,13 @@ class Preprocessor():
                     output
                 ]
 
-            print "Trimming with the following parameters."
-            print "%% %s" % (' '.join(str(p) for p in trim_seq_cmd))
+            print("Trimming with the following parameters.")
+            print("%% %s" % (' '.join(str(p) for p in trim_seq_cmd)))
 
             trim_seq = subprocess.Popen(trim_seq_cmd)
             trim_seq.wait()
 
-        print "Barcodes trimmed...\n"
+        print("Barcodes trimmed...\n")
         return output
 
     def _clip_adapter(self, input, barcode):
@@ -103,7 +103,7 @@ class Preprocessor():
             number_of_cores = multiprocessing.cpu_count()
             number_of_records_per_core = number_of_records / number_of_cores
 
-            print "Clipping adapter sequences across {0} cores...\n".format(number_of_cores)
+            print("Clipping adapter sequences across {0} cores...\n".format(number_of_cores))
 
             # Prepare for multicore processing
             processes = []
@@ -128,7 +128,7 @@ class Preprocessor():
                     is_last_record_in_chunk = (record_index + 1) % number_of_records_per_core == 0
                     is_last_chunk = chunk_index == number_of_cores - 1
                     if is_last_line_in_record and is_last_record_in_chunk and not is_last_chunk:
-                        print "Starting fastx_clipper on core {0}".format(chunk_index + 1)
+                        print("Starting fastx_clipper on core {0}".format(chunk_index + 1))
 
                         # Finish writing the chunk
                         chunk_input_handle.close()
@@ -147,7 +147,7 @@ class Preprocessor():
                         chunk_index += 1
 
             if chunk_input_handle is not None:
-                print "Starting fastx_clipper on core {0}".format(chunk_index + 1)
+                print("Starting fastx_clipper on core {0}".format(chunk_index + 1))
 
                 # Finish writing the chunk
                 chunk_input_handle.close()
@@ -157,17 +157,17 @@ class Preprocessor():
                 chunk_output_paths.append(chunk_output_path)
 
                 # Kick off processing
-                process = Process(target=fastx_clipper, args=(chunk_input_path, chunk_output_path))
+                process = Process(target=fastx_clipper, args=(chunk_input_path, chunk_output_path, self.config.template, self.config.min_overlap, self.config.min_seq_len))
                 process.start()
                 processes.append(process)
 
-            print "\nWaiting for {0} processes to finish, this could take a while...\n".format(number_of_cores)
+            print("\nWaiting for {0} processes to finish, this could take a while...\n".format(number_of_cores))
 
             # Wait for all processes to finish
             for process in processes:
                 process.join()
 
-            print "Clipping complete, combining results into a single output file...\n"
+            print("Clipping complete, combining results into a single output file...\n")
 
             # Build back up a single combined output file
             combined_output_handle = open(output, "w")
@@ -183,14 +183,14 @@ class Preprocessor():
             combined_output_handle.close()
 
             elapsed_seconds = (time.time() - start_time)
-            print "Adapters clipped in {0:.0f} seconds\n".format(elapsed_seconds)
+            print("Adapters clipped in {0:.0f} seconds\n".format(elapsed_seconds))
         else:
-            print "Using previously-clipped adapter sequence at {0}\n".format(output)
+            print("Using previously-clipped adapter sequence at {0}\n".format(output))
 
         return output
 
     def _collapse_reads(self, input):
-        print "Collapsing reads..."
+        print("Collapsing reads...")
 
         output = path.join(self.tmp, base_file_name(input) + "_collapsed.fq")
 
@@ -223,19 +223,19 @@ class Preprocessor():
                     copied_reads += read_count
                     unique_reads += 1
 
-            print "Max. Length: %i\nInput: %i reads.\nOutput: %i reads (%i " \
+            print("Max. Length: %i\nInput: %i reads.\nOutput: %i reads (%i " \
                   "unique).\ndiscarded %i too-long reads." % (
                 self.config.max_seq_len,
                 total_reads,
                 copied_reads,
                 unique_reads,
                 too_long_reads
-            )
+            ))
 
-            #print self._read_size_dist(collapsed)
-            print "self._read_size_dist(collapsed)"
+            #print(self._read_size_dist(collapsed))
+            print("self._read_size_dist(collapsed)")
             
-        print "Reads collapsed!\n"
+        print("Reads collapsed!\n")
         return output
 
     @staticmethod

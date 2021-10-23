@@ -165,7 +165,7 @@ def order_records(bed_file, output):
     records["-"].sort(key=lambda p: (p.name, -p.chrom_start))
 
     with open(output, "w") as output_handle:
-        for _, bed_records in records.iteritems():
+        for bed_records in records.values():
             output_handle.writelines(("%s\n" % str(bed_record)) for bed_record in bed_records)
 
 def extract_sequences(genome, bed_file, output):
@@ -182,8 +182,8 @@ def extract_sequences(genome, bed_file, output):
         "-fo",
         output
     ]
-    print "Running bedtools with the following:"
-    print bedtools_call
+    print("Running bedtools with the following:")
+    print(bedtools_call)
 
     extract = subprocess.Popen(
         bedtools_call
